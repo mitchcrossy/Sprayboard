@@ -1,0 +1,18 @@
+{
+  "name": "sprayboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Home spray wall app: trace holds, set problems, log sends with your crew.",
+  "scripts": {
+    "android:add": "cap add android",
+    "android:sync": "cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/core": "^8.5.2"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.2"
+  }
+}

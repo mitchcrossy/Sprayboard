@@ -1,0 +1,1189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#a8632c">
+<meta name="description" content="Set, trace and log problems on your home spray wall with your crew.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font:14px/1.45 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:#eceef1}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<title>Sprayboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eceef1; --surface:#ffffff; --surface-2:#f3f4f6; --ink:#191c21; --ink-2:#59616c; --line:#d5d9df;
+  --accent:#a8632c; --accent-ink:#ffffff; --accent-soft:#f3e6da;
+  --danger:#c2362f; --ok:#1f8f4e;
+  --shadow:0 8px 30px rgba(20,24,30,.14);
+  --display:'Barlow Condensed','Arial Narrow',system-ui,sans-serif;
+  --body:'Barlow',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121417; --surface:#1b1e23; --surface-2:#23272d; --ink:#eef0f3; --ink-2:#9aa3ae; --line:#2f343b;
+  --accent:#dc9a5f; --accent-ink:#1b1207; --accent-soft:#3a2a1c; --danger:#ef6b63; --ok:#4cc27f;
+  --shadow:0 8px 30px rgba(0,0,0,.5); color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#121417; --surface:#1b1e23; --surface-2:#23272d; --ink:#eef0f3; --ink-2:#9aa3ae; --line:#2f343b;
+  --accent:#dc9a5f; --accent-ink:#1b1207; --accent-soft:#3a2a1c; --danger:#ef6b63; --ok:#4cc27f;
+  --shadow:0 8px 30px rgba(0,0,0,.5); color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--ink)}
+body{font:15px/1.45 var(--body);padding-inline:16px;-webkit-tap-highlight-color:transparent}
+.app{max-width:620px;margin:0 auto;padding-block:0 120px}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:var(--bg);display:flex;align-items:center;gap:8px;padding-block:12px 10px}
+.topbar h1{font-family:var(--display);font-weight:700;font-size:26px;line-height:1.05;letter-spacing:.01em;text-transform:uppercase;margin:0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.iconbtn{flex:none;width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;padding:0}
+.iconbtn svg{width:20px;height:20px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-weight:600}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.btn.danger{color:var(--danger)}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.55;cursor:default}
+.btn svg{width:18px;height:18px}
+.grow{flex:1}
+.muted{color:var(--ink-2)}
+.small{font-size:13px}
+.label{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+h2{font-family:var(--display);font-weight:700;font-size:24px;text-transform:uppercase;letter-spacing:.01em;margin:0;text-wrap:balance}
+h3{font-family:var(--display);font-weight:700;font-size:19px;text-transform:uppercase;letter-spacing:.02em;margin:0}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.section{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+.banner{background:var(--accent-soft);border-radius:10px;padding:10px 12px;font-size:14px}
+
+/* bottom bar */
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:7;background:var(--surface);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px))}
+.bar-in{max-width:620px;margin:0 auto;display:flex;gap:8px}
+
+/* wall cards */
+.walls{display:grid;gap:14px}
+.wallcard{display:grid;grid-template-columns:112px 1fr;gap:14px;align-items:center;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px;width:100%}
+.wallcard img{width:112px;height:112px;object-fit:cover;border-radius:9px;display:block;background:var(--surface-2)}
+.wallcard .nm{font-family:var(--display);font-size:22px;font-weight:700;text-transform:uppercase;line-height:1.1}
+.badge{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);border-radius:999px;padding:1px 8px;color:var(--ink-2)}
+.intro{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.intro p{margin:0;max-width:60ch}
+
+/* stage */
+.stage{position:relative;overflow:hidden;background:#0b0c0e;touch-action:none;user-select:none;-webkit-user-select:none;margin-inline:-16px}
+@media (min-width:652px){.stage{margin-inline:0;border-radius:14px}}
+.canvas{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+.canvas img{position:absolute;inset:0;width:100%;height:100%;max-width:none;pointer-events:none;-webkit-user-drag:none}
+.canvas svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.zoomctl{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:6px}
+.zoomctl button{width:38px;height:38px;border-radius:10px;border:0;background:rgba(15,17,20,.72);color:#fff;display:grid;place-items:center;backdrop-filter:blur(6px)}
+.zoomctl svg{width:18px;height:18px}
+
+/* legend + brushes */
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:12px;height:12px;border-radius:50%;border:3px solid currentColor;display:inline-block}
+.brushes{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-block:10px}
+.brush{min-height:46px;border-radius:10px;border:2px solid var(--line);background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;font-weight:600;font-size:14px}
+.brush small{font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.brush[aria-pressed="true"]{border-color:var(--c);box-shadow:inset 0 0 0 2px var(--c)}
+.brush i{width:10px;height:10px;border-radius:50%;background:var(--c);display:inline-block;margin-right:5px}
+
+/* grade chip */
+.chip{flex:none;display:inline-grid;place-items:center;min-width:52px;height:34px;padding:0 8px;border-radius:8px;font-family:var(--display);font-weight:700;font-size:20px;color:#fff;background:var(--g);font-variant-numeric:tabular-nums}
+.chip.big{min-width:74px;height:48px;font-size:30px}
+
+/* filters */
+.search{width:100%;min-height:44px;border-radius:10px;border:1px solid var(--line);background:var(--surface);padding:0 12px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sel{min-height:38px;border-radius:9px;border:1px solid var(--line);background:var(--surface);padding:0 8px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;min-height:36px;padding:0 12px;font-weight:600;font-size:14px;color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 11px;font-size:13px;font-weight:500}
+.tag[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tag.static{cursor:default;padding:2px 9px;font-size:12px;color:var(--ink-2)}
+
+/* problem list */
+.plist{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.pitem{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px;border:0;border-top:1px solid var(--line);background:transparent;text-align:left;width:100%}
+.pitem:first-child{border-top:0}
+.pitem .nm{font-weight:600;font-size:16px;line-height:1.2;overflow-wrap:anywhere}
+.pitem .meta{font-size:13px;color:var(--ink-2)}
+.status{font-size:12px;font-weight:600;white-space:nowrap;text-align:right}
+.status.sent{color:var(--ok)}
+.empty{padding:28px 16px;text-align:center;color:var(--ink-2)}
+
+/* problem detail */
+.phead{display:flex;gap:12px;align-items:center;margin-top:14px}
+.facts{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;color:var(--ink-2)}
+.facts b{color:var(--ink);font-weight:600}
+.note{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.log{display:flex;flex-direction:column}
+.log .li{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.log .li:first-child{border-top:0}
+.log .x{border:0;background:transparent;color:var(--ink-2);width:36px;height:36px;border-radius:8px}
+.log .x svg{width:16px;height:16px}
+
+/* forms */
+.field{display:flex;flex-direction:column;gap:5px}
+.field > span{font-size:13px;font-weight:600;color:var(--ink-2)}
+.input{min-height:44px;border-radius:10px;border:1px solid var(--line);background:var(--surface);padding:0 12px;width:100%}
+textarea.input{padding:10px 12px;min-height:76px;resize:vertical}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.err{color:var(--danger);font-size:14px;font-weight:500}
+.stepper{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.stepper button{width:44px;height:44px;border:0;background:transparent;font-size:20px}
+.stepper output{min-width:40px;text-align:center;font-weight:600;font-variant-numeric:tabular-nums}
+.stars{display:flex;gap:6px}
+.stars button{width:44px;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--line);font-size:22px;line-height:1}
+.stars button.on{color:#e0a21a}
+.range{width:100%;accent-color:var(--accent)}
+.drop{display:grid;place-items:center;min-height:150px;border:2px dashed var(--line);border-radius:12px;background:var(--surface-2);text-align:center;padding:10px;cursor:pointer;overflow:hidden}
+.drop img{max-height:220px;border-radius:8px}
+.drop input{position:absolute;opacity:0;width:1px;height:1px}
+
+/* sheet */
+#sheet-root{position:fixed;inset:0;z-index:20}
+.scrim{position:absolute;inset:0;background:rgba(8,10,12,.5)}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:88%;overflow:auto;background:var(--bg);border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));box-shadow:var(--shadow)}
+.sheet-in{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.sheet .grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:-6px auto 2px}
+
+/* stats */
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+.tile .v{font-family:var(--display);font-weight:700;font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
+.bars{display:flex;flex-direction:column;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+.barrow{display:grid;grid-template-columns:40px 1fr 28px;gap:10px;align-items:center;font-variant-numeric:tabular-nums}
+.barrow .g{font-family:var(--display);font-weight:700;font-size:17px}
+.barrow .track{height:14px;border-radius:4px;background:var(--surface-2)}
+.barrow .fill{height:100%;border-radius:4px;background:var(--accent)}
+.barrow .n{text-align:right;font-weight:600;font-size:14px}
+
+#toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:10px;font-weight:500;font-size:14px;max-width:calc(100% - 32px);box-shadow:var(--shadow)}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.6}}}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<div id="sheet-root" hidden></div>
+<div id="toast" hidden></div>
+
+<script src="supabase.js"></script>
+<script>
+(() => {
+/* ---------- constants ---------- */
+const FONT=['4','5','5+','6A','6A+','6B','6B+','6C','6C+','7A','7A+','7B','7B+','7C','7C+','8A','8A+','8B','8B+','8C','8C+','9A'];
+const VMAP=[0,1,2,3,3,4,4,5,5,6,7,8,8,9,10,11,12,13,14,15,16,17];
+const ROLE={start:{c:'#22c55e',label:'Start'},hand:{c:'#22b8f0',label:'Hand'},foot:{c:'#f5a524',label:'Foot'},finish:{c:'#e548d4',label:'Finish'}};
+const FEET=['Marked feet only','Feet follow hands','Any feet','No feet (campus)','Tracking'];
+const ANGLES=[0,5,10,15,20,25,30,35,40,45,50,55,60,65,70];
+const VW=1000;
+const I={
+  back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+  gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+  chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 20V11M12 20V4M19 20v-6"/></svg>',
+  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  minus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg>',
+  fit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
+  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  prev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+  next:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>',
+  wall:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="9" cy="8" r="1.5"/><circle cx="15" cy="11" r="1.5"/><circle cx="10" cy="16" r="1.5"/></svg>'
+};
+
+/* ---------- helpers ---------- */
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const fmtDay=s=>{try{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})}catch(e){return s}};
+function gradeLabel(i){ if(i===-1) return 'PROJ'; if(i==null||i<0) return '?'; return prefs.grades==='font'?FONT[i]:'V'+VMAP[i]; }
+function gradeBoth(i){ return prefs.grades==='font'?`${FONT[i]} (V${VMAP[i]})`:`V${VMAP[i]} (${FONT[i]})`; }
+function gradeColor(i){ if(i<0) return '#4f5864'; const v=VMAP[i]??0; return v<=2?'#2f9e55':v<=4?'#2a7fc9':v<=6?'#c98a10':v<=8?'#d8582a':v<=10?'#c2304a':'#7446c9'; }
+function gradeOptions(sel,withProject){ return (withProject?`<option value="-1" ${sel===-1?'selected':''}>Project (grade it when it's sent)</option>`:'')+FONT.map((f,i)=>`<option value="${i}" ${i===sel?'selected':''}>${gradeBoth(i)}</option>`).join(''); }
+function chip(i,big){ return `<span class="chip${big?' big':''}" style="--g:${gradeColor(i)}">${gradeLabel(i)}</span>`; }
+let toastT; function toast(m){ const t=$('#toast'); t.textContent=m; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,2400); }
+
+/* ---------- prefs (this device) ---------- */
+let prefs={grades:'v',mapR:24,hideDemo:false,tapTrace:true,traceTol:5,crewId:null};
+try{ Object.assign(prefs,JSON.parse(localStorage.getItem('sprayboard.prefs')||'{}')); }catch(e){}
+function savePrefs(){ try{localStorage.setItem('sprayboard.prefs',JSON.stringify(prefs))}catch(e){} }
+
+/* ---------- backend (Supabase) ---------- */
+const SB_URL='https://ltfmnmmmuwjdbknhpqgl.supabase.co';
+const SB_KEY='sb_publishable_MaXQ8nz4Vc13FbGwFYjO4g_91-6KdWr';
+const sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const Me={id:null,name:'',email:''};
+const Crew={id:null,name:'',code:'',ownerId:null,list:[],members:{}};
+const COLS=['walls','problems','ticks'];
+const Store={data:{walls:{},problems:{},ticks:{}},demo:{walls:{},problems:{},ticks:{}},urls:{},channel:null};
+const MAP={
+  walls:{
+    toApp:r=>({id:r.id,crewId:r.crew_id,name:r.name,angle:r.angle,aspect:r.aspect,holds:r.holds||[],photoPath:r.photo_path,createdBy:r.created_by,createdAt:r.created_at}),
+    toDb:o=>({id:o.id,crew_id:o.crewId||Crew.id,name:o.name,angle:o.angle,aspect:o.aspect,holds:o.holds||[],photo_path:o.photoPath||null,created_by:o.createdBy||Me.id,created_at:o.createdAt})},
+  problems:{
+    toApp:r=>({id:r.id,crewId:r.crew_id,wallId:r.wall_id,name:r.name,grade:r.grade,feet:r.feet,noMatch:r.no_match,notes:r.notes||'',holds:r.holds||{},setterId:r.setter_id,setter:r.setter_name||'',fa:r.fa,createdAt:r.created_at}),
+    toDb:o=>({id:o.id,crew_id:o.crewId||Crew.id,wall_id:o.wallId,name:o.name,grade:o.grade,feet:o.feet,no_match:!!o.noMatch,notes:o.notes||'',holds:o.holds||{},setter_id:o.setterId||null,setter_name:o.setter||'',fa:o.fa||null,created_at:o.createdAt})},
+  ticks:{
+    toApp:r=>({id:r.id,crewId:r.crew_id,wallId:r.wall_id,problemId:r.problem_id,userId:r.user_id,day:r.day,at:r.at,sent:r.sent,attempts:r.attempts,grade:r.grade,stars:r.stars||0,note:r.note||'',fa:r.fa}),
+    toDb:o=>({id:o.id,crew_id:o.crewId||Crew.id,wall_id:o.wallId,problem_id:o.problemId,user_id:o.userId||Me.id,day:o.day,at:o.at,sent:!!o.sent,attempts:o.attempts,grade:o.grade??null,stars:o.stars||0,note:o.note||'',fa:!!o.fa})}
+};
+const all=c=>({...(prefs.hideDemo?{}:Store.demo[c]),...Store.data[c]});
+const get=(c,id)=>Store.data[c][id]||Store.demo[c][id];
+const isMine=t=>t.demo||t.userId===Me.id;
+const nameOf=id=>id===Me.id?'You':(Crew.members[id]||'A crew member');
+function dbError(e){ const m=(e&&e.message)||''; if(/Failed to fetch|NetworkError|network/i.test(m)) return 'No internet connection. Check your signal and try again.'; if(/JWT|token/i.test(m)) return 'Your sign-in expired. Sign in again.'; return m||'Something went wrong. Try again.'; }
+async function put(c,obj){
+  if(obj.demo){ Store.demo[c][obj.id]=obj; scheduleRender(); return; }
+  if(c==='ticks'&&!obj.userId) obj={...obj,userId:Me.id};
+  const prev=Store.data[c][obj.id];
+  Store.data[c][obj.id]=obj; scheduleRender();
+  const {error}=await sb.from(c).upsert(MAP[c].toDb(obj));
+  if(error){ if(prev) Store.data[c][obj.id]=prev; else delete Store.data[c][obj.id]; scheduleRender(); toast('Could not save: '+dbError(error)); throw error; }
+}
+async function del(c,id){
+  const o=get(c,id); if(!o) return true;
+  if(o.demo){ delete Store.demo[c][id]; scheduleRender(); return true; }
+  const {data,error}=await sb.from(c).delete().eq('id',id).select('id');
+  if(error){ toast('Could not delete: '+dbError(error)); return false; }
+  if(!data||!data.length){ toast(c==='ticks'?'You can only delete your own logs.':c==='problems'?'Only the setter or the crew owner can delete this problem.':'Only the person who added this wall or the crew owner can delete it.'); return false; }
+  delete Store.data[c][id];
+  if(c==='problems') Object.values(Store.data.ticks).forEach(t=>{ if(t.problemId===id) delete Store.data.ticks[t.id]; });
+  if(c==='walls'){ Object.values(Store.data.problems).forEach(p=>{ if(p.wallId===id) delete Store.data.problems[p.id]; }); Object.values(Store.data.ticks).forEach(t=>{ if(t.wallId===id) delete Store.data.ticks[t.id]; }); }
+  scheduleRender(); return true;
+}
+async function signPhotos(walls){
+  const paths=walls.map(w=>w.photoPath).filter(p=>p&&!Store.urls[p]);
+  if(!paths.length) return;
+  const {data}=await sb.storage.from('wall-photos').createSignedUrls(paths,60*60*24*7);
+  (data||[]).forEach(d=>{ if(d.signedUrl) Store.urls[d.path]=d.signedUrl; });
+}
+async function loadCrewData(){
+  const q=c=>sb.from(c).select('*').eq('crew_id',Crew.id).limit(5000);
+  const [w,p,t,m]=await Promise.all([q('walls'),q('problems'),q('ticks'),sb.from('crew_members').select('user_id,role').eq('crew_id',Crew.id)]);
+  const err=w.error||p.error||t.error||m.error; if(err) throw err;
+  COLS.forEach((c,i)=>{ const rows=[w,p,t][i].data||[]; Store.data[c]=Object.fromEntries(rows.map(r=>[r.id,MAP[c].toApp(r)])); });
+  const ids=(m.data||[]).map(x=>x.user_id);
+  const {data:profs}=ids.length?await sb.from('profiles').select('id,display_name').in('id',ids):{data:[]};
+  Crew.members=Object.fromEntries((profs||[]).map(x=>[x.id,x.display_name]));
+  await signPhotos(Object.values(Store.data.walls));
+}
+function subscribe(){
+  if(Store.channel) sb.removeChannel(Store.channel);
+  const ch=sb.channel('crew-'+Crew.id);
+  COLS.forEach(c=>{
+    ch.on('postgres_changes',{event:'INSERT',schema:'public',table:c,filter:'crew_id=eq.'+Crew.id},pl=>onRow(c,pl.new));
+    ch.on('postgres_changes',{event:'UPDATE',schema:'public',table:c,filter:'crew_id=eq.'+Crew.id},pl=>onRow(c,pl.new));
+    ch.on('postgres_changes',{event:'DELETE',schema:'public',table:c},pl=>{ const id=pl.old&&pl.old.id; if(id&&Store.data[c][id]){ delete Store.data[c][id]; scheduleRender(); } });
+  });
+  ch.subscribe(); Store.channel=ch;
+}
+async function onRow(c,row){
+  if(!row||row.crew_id!==Crew.id) return;
+  const o=MAP[c].toApp(row); Store.data[c][o.id]=o;
+  if(c==='walls'&&o.photoPath&&!Store.urls[o.photoPath]){ await signPhotos([o]); pixCache.delete(o.id); }
+  if(c==='ticks'&&o.userId&&!Crew.members[o.userId]){ const {data}=await sb.from('profiles').select('id,display_name').eq('id',o.userId).maybeSingle(); if(data) Crew.members[data.id]=data.display_name; }
+  scheduleRender();
+}
+const wallSrc=w=>w.demo?w.photoData:(Store.urls[w.photoPath]||w.photoData||'');
+
+/* ---------- demo wall (generated) ---------- */
+function rng(seed){ return ()=>{ seed|=0; seed=seed+0x6D2B79F5|0; let t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function blob(g,x,y,r,R){ const k=6+Math.floor(R()*5), pts=[]; const a0=R()*6.28; for(let i=0;i<k;i++){ const a=a0+i/k*Math.PI*2, rr=r*(0.72+R()*0.42); pts.push([x+Math.cos(a)*rr,y+Math.sin(a)*rr*(0.8+R()*0.3)]); } g.beginPath(); const m=(p,q)=>[(p[0]+q[0])/2,(p[1]+q[1])/2]; let s=m(pts[k-1],pts[0]); g.moveTo(s[0],s[1]); for(let i=0;i<k;i++){ const p=pts[i], q=pts[(i+1)%k], e=m(p,q); g.quadraticCurveTo(p[0],p[1],e[0],e[1]); } g.closePath(); }
+function buildDemo(){
+  const W=VW,H=1250,R=rng(20260927);
+  const c=document.createElement('canvas'); c.width=W; c.height=H; const g=c.getContext('2d');
+  const base=g.createLinearGradient(0,0,W,H); base.addColorStop(0,'#dcc194'); base.addColorStop(1,'#caa878'); g.fillStyle=base; g.fillRect(0,0,W,H);
+  for(let i=0;i<200;i++){ let x=R()*W; g.strokeStyle=`rgba(${110+R()*40|0},${72+R()*30|0},34,${0.04+R()*0.08})`; g.lineWidth=0.6+R()*2.4; g.beginPath(); g.moveTo(x,0); for(let y=0;y<=H;y+=40){ x+=(R()-.5)*5; g.lineTo(x,y);} g.stroke(); }
+  g.fillStyle='rgba(60,40,20,.12)'; g.fillRect(0,H-120,W,120);
+  g.strokeStyle='rgba(55,36,18,.45)'; g.lineWidth=2.5; g.beginPath(); g.moveTo(W/2,0); g.lineTo(W/2,H-120); g.moveTo(0,H*0.46); g.lineTo(W,H*0.46); g.moveTo(0,H-120); g.lineTo(W,H-120); g.stroke();
+  g.fillStyle='rgba(35,30,26,.6)'; for(let y=25;y<H-120;y+=50) for(let x=25;x<W;x+=50){ g.beginPath(); g.arc(x,y,2.4,0,7); g.fill(); }
+  const COLORS=['#e5483b','#2f6fdb','#f2c230','#2aa84a','#7a4bd1','#1d1d1f','#f07ec2','#ff8a1f','#ececec','#35b5c1','#8b5a2b'];
+  const holds=[]; let n=0;
+  const draw=(x,y,r,col)=>{
+    g.save(); g.shadowColor='rgba(0,0,0,.38)'; g.shadowBlur=r*.55; g.shadowOffsetY=r*.28; g.fillStyle=col; blob(g,x,y,r,R); g.fill(); g.restore();
+    const hi=g.createRadialGradient(x-r*.35,y-r*.4,1,x,y,r*1.2); hi.addColorStop(0,'rgba(255,255,255,.42)'); hi.addColorStop(.55,'rgba(255,255,255,0)'); hi.addColorStop(1,'rgba(0,0,0,.28)'); g.fillStyle=hi; g.fill();
+    if(R()<.45){ g.fillStyle='rgba(255,255,255,.28)'; g.beginPath(); g.ellipse(x-r*.1,y-r*.35,r*.55,r*.28,0,0,7); g.fill(); }
+    if(r>11){ g.fillStyle='rgba(20,20,20,.7)'; g.beginPath(); g.arc(x,y,Math.min(5,r*.2),0,7); g.fill(); g.fillStyle='rgba(200,200,200,.6)'; g.beginPath(); g.arc(x,y,Math.min(2,r*.08),0,7); g.fill(); }
+  };
+  const cell=92;
+  for(let y=cell*.55;y<H-130;y+=cell) for(let x=cell*.5;x<W;x+=cell){
+    if(R()<.16) continue; const r=12+R()*22, hx=x+(R()-.5)*cell*.68, hy=y+(R()-.5)*cell*.68;
+    if(hx<r+8||hx>W-r-8) continue; draw(hx,hy,r,COLORS[Math.floor(R()*COLORS.length)]);
+    holds.push({id:'h'+(n++),x:Math.round(hx),y:Math.round(hy),r:Math.round(r+5)});
+  }
+  for(let i=0;i<60&&holds.length<400;i++){ const x=30+R()*(W-60), y=H*.62+R()*(H*.36); if(holds.some(h=>Math.hypot(h.x-x,h.y-y)<h.r+20)) continue; const r=6+R()*4; draw(x,y,r,COLORS[Math.floor(R()*COLORS.length)]); holds.push({id:'h'+(n++),x:Math.round(x),y:Math.round(y),r:Math.round(r+5)}); }
+  const wall={id:'demo',demo:true,name:'Example wall',angle:40,aspect:H/W,holds,photoData:c.toDataURL('image/jpeg',.86),createdAt:'2026-09-01T08:00:00Z'};
+  Store.demo.walls.demo=wall;
+  const R2=rng(11), big=holds.filter(h=>h.r>16), small=holds.filter(h=>h.r<=16);
+  const mk=(x0,gi,name,feet,tags,daysAgo)=>{
+    const roles={}; const low=big.filter(h=>h.y>H*.6&&h.y<H*.8).sort((a,b)=>Math.abs(a.x-x0)-Math.abs(b.x-x0));
+    let cur=low[0]; roles[cur.id]='start'; const s2=low.find(h=>h!==cur&&Math.hypot(h.x-cur.x,h.y-cur.y)<170); if(s2&&R2()<.6) roles[s2.id]='start';
+    let guard=0;
+    while(cur.y>230&&guard++<12){ const reach=150+gi*14; const cands=big.filter(h=>h.y<cur.y-90&&h.y>cur.y-reach&&Math.abs(h.x-cur.x)<230&&!roles[h.id]); if(!cands.length) break; cur=cands[Math.floor(R2()*cands.length)]; roles[cur.id]='hand'; }
+    const tops=big.filter(h=>h.y<240&&!roles[h.id]).sort((a,b)=>Math.abs(a.x-cur.x)-Math.abs(b.x-cur.x));
+    if(cur.y<240) roles[cur.id]='finish'; else if(tops[0]) roles[tops[0].id]='finish';
+    if(feet==='Marked feet only'){ const sy=Math.max(...Object.keys(roles).map(id=>holds.find(h=>h.id===id).y)); small.filter(h=>h.y>sy+40&&Math.abs(h.x-x0)<220).slice(0,3).forEach(h=>roles[h.id]='foot'); }
+    const d=new Date(Date.now()-daysAgo*864e5).toISOString();
+    return {id:'demo-'+name.toLowerCase().replace(/[^a-z]+/g,'-'),demo:true,wallId:'demo',name,grade:gi,feet,tags,notes:'',setter:'Example',holds:roles,createdAt:d};
+  };
+  const ps=[mk(160,3,'Birch Please','Marked feet only',['crimpy'],12),mk(470,6,'T-Nut Tango','Feet follow hands',['technical','pinchy'],9),mk(820,2,'Offcut','Any feet',['slopey'],8),mk(320,9,'The Kicker','Marked feet only',['powerful','compression'],5),mk(640,7,'Half Sheet Hero','Feet follow hands',['crimpy','dyno'],3),mk(900,11,'Glue Lam','Marked feet only',['powerful'],1)];
+  ps.forEach(p=>Store.demo.problems[p.id]=p);
+  const t=(p,daysAgo,sent,att,gr,st)=>{ const d=new Date(Date.now()-daysAgo*864e5); const day=d.toISOString().slice(0,10); const id='demo-t-'+p.id+daysAgo; Store.demo.ticks[id]={id,demo:true,problemId:p.id,wallId:'demo',day,at:d.toISOString(),sent,attempts:att,grade:gr,stars:st,note:''}; };
+  t(ps[0],10,true,1,3,2); t(ps[2],8,true,1,2,1); t(ps[1],7,false,5,null,0); t(ps[1],4,true,3,6,3); t(ps[4],2,false,6,null,0);
+}
+
+/* ---------- stage (zoomable wall with hold overlay) ---------- */
+function mountStage(host,wall,cfg){
+  host.innerHTML=`<div class="stage"><div class="canvas"><img alt="Photo of ${esc(wall.name)}" draggable="false"><svg xmlns="http://www.w3.org/2000/svg"></svg></div>
+  <div class="zoomctl"><button type="button" data-z="in" aria-label="Zoom in">${I.plus}</button><button type="button" data-z="out" aria-label="Zoom out">${I.minus}</button><button type="button" data-z="fit" aria-label="Fit wall">${I.fit}</button></div></div>`;
+  const stage=host.firstElementChild, canvas=$('.canvas',stage), img=$('img',stage), svg=$('svg',stage);
+  img.src=wallSrc(wall);
+  const VH=VW*wall.aspect; svg.setAttribute('viewBox',`0 0 ${VW} ${VH}`); svg.setAttribute('preserveAspectRatio','none');
+  const z=cfg.zoom; let W=0,H=0,SH=0;
+  const clampS=s=>Math.min(6,Math.max(1,s));
+  function clamp(){ z.s=clampS(z.s); z.tx=Math.min(0,Math.max(W-W*z.s,z.tx)); z.ty=Math.min(0,Math.max(SH-H*z.s,z.ty)); }
+  function apply(){ canvas.style.transform=`translate(${z.tx}px,${z.ty}px) scale(${z.s})`; }
+  function layout(){ W=stage.clientWidth; if(!W) return; H=W*wall.aspect; SH=Math.min(H,Math.max(280,window.innerHeight*(cfg.maxH||.6))); stage.style.height=SH+'px'; canvas.style.width=W+'px'; canvas.style.height=H+'px'; clamp(); apply(); }
+  function toV(cx,cy){ const r=stage.getBoundingClientRect(); return {x:(cx-r.left-z.tx)/z.s/W*VW, y:(cy-r.top-z.ty)/z.s/W*VW}; }
+  function hit(p){ const tol=16/(z.s*W/VW); let best=null,bd=Infinity; for(const h of cfg.holds()){ let d=holdDist(h,p); if(d<=0) d=-1/(1+hsize(h)); if(d<tol&&d<bd){bd=d;best=h;} } return best; }
+  function zoomAt(px,py,f){ const r=stage.getBoundingClientRect(); const lx=px-r.left, ly=py-r.top; const cx=(lx-z.tx)/z.s, cy=(ly-z.ty)/z.s; z.s=clampS(z.s*f); z.tx=lx-cx*z.s; z.ty=ly-cy*z.s; clamp(); apply(); }
+  const pts=new Map(); let g=null;
+  const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y), mid=(a,b)=>({x:(a.x+b.x)/2,y:(a.y+b.y)/2});
+  stage.addEventListener('pointerdown',e=>{
+    if(e.target.closest('.zoomctl')) return;
+    try{stage.setPointerCapture(e.pointerId)}catch(_){}
+    pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pts.size===1){ const p=toV(e.clientX,e.clientY); const h=cfg.draggable?hit(p):null; const drag=h&&cfg.draggable(h)?h:null; g={type:'maybe',x0:e.clientX,y0:e.clientY,tx0:z.tx,ty0:z.ty,moved:false,drag,off:drag?{dx:drag.x-p.x,dy:drag.y-p.y}:null}; }
+    else if(pts.size===2){ const [a,b]=[...pts.values()]; g={type:'pinch',d0:dist(a,b)||1,m0:mid(a,b),s0:z.s,tx0:z.tx,ty0:z.ty}; }
+  });
+  stage.addEventListener('pointermove',e=>{
+    if(!pts.has(e.pointerId)||!g) return; pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(g.type==='pinch'&&pts.size>=2){ const [a,b]=[...pts.values()]; const m=mid(a,b), r=stage.getBoundingClientRect(); const px=(g.m0.x-r.left-g.tx0)/g.s0, py=(g.m0.y-r.top-g.ty0)/g.s0; z.s=clampS(g.s0*dist(a,b)/g.d0); z.tx=m.x-r.left-px*z.s; z.ty=m.y-r.top-py*z.s; clamp(); apply(); return; }
+    if(g.type==='maybe'||g.type==='pan'||g.type==='drag'){
+      const dx=e.clientX-g.x0, dy=e.clientY-g.y0;
+      if(!g.moved&&Math.hypot(dx,dy)>6){ g.moved=true; g.type=g.drag?'drag':'pan'; if(g.drag) cfg.onDragStart?.(g.drag); }
+      if(g.type==='pan'){ z.tx=g.tx0+dx; z.ty=g.ty0+dy; clamp(); apply(); }
+      else if(g.type==='drag'){ const p=toV(e.clientX,e.clientY); moveHold(g.drag,Math.round(Math.max(0,Math.min(VW,p.x+g.off.dx))),Math.round(Math.max(0,Math.min(VH,p.y+g.off.dy)))); redraw(); }
+    }
+  });
+  const end=e=>{
+    if(!pts.has(e.pointerId)) return; pts.delete(e.pointerId);
+    if(g&&g.type==='maybe'&&!g.moved&&e.type==='pointerup'){ const p=toV(e.clientX,e.clientY); if(p.x>=0&&p.y>=0&&p.x<=VW&&p.y<=VH) cfg.onTap?.(p,hit(p)); }
+    if(g&&g.type==='drag') cfg.onDragEnd?.(g.drag);
+    g=pts.size?{type:'none'}:null;
+  };
+  stage.addEventListener('pointerup',end); stage.addEventListener('pointercancel',end);
+  stage.addEventListener('wheel',e=>{ e.preventDefault(); zoomAt(e.clientX,e.clientY,e.deltaY<0?1.15:1/1.15); },{passive:false});
+  stage.querySelector('.zoomctl').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const r=stage.getBoundingClientRect(); if(b.dataset.z==='fit'){ z.s=1;z.tx=0;z.ty=0; clamp(); apply(); } else zoomAt(r.left+r.width/2,r.top+r.height/2,b.dataset.z==='in'?1.5:1/1.5); });
+  function redraw(){ svg.innerHTML=cfg.draw(); }
+  const ro=new ResizeObserver(layout); ro.observe(stage);
+  layout(); redraw();
+  return {redraw};
+}
+/* hold geometry: circles {x,y,r}, boxes {x,y,w,h}, outlines {x,y,w,h,pts:[x0,y0,x1,y1,…]} (x,y = centre) */
+const isBox=h=>h.w!=null;
+const hsize=h=>isBox(h)?Math.round(Math.max(h.w,h.h)/2):h.r;
+function inPoly(pts,x,y){ let c=false; for(let i=0,j=pts.length-2;i<pts.length;j=i,i+=2){ const xi=pts[i],yi=pts[i+1],xj=pts[j],yj=pts[j+1]; if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi) c=!c; } return c; }
+function polyEdgeDist(pts,x,y){ let best=Infinity; for(let i=0,j=pts.length-2;i<pts.length;j=i,i+=2){ const ax=pts[j],ay=pts[j+1],bx=pts[i],by=pts[i+1],vx=bx-ax,vy=by-ay,l=vx*vx+vy*vy; const t=l?Math.max(0,Math.min(1,((x-ax)*vx+(y-ay)*vy)/l)):0; best=Math.min(best,Math.hypot(ax+t*vx-x,ay+t*vy-y)); } return best; }
+function holdDist(h,p){ if(h.pts) return inPoly(h.pts,p.x,p.y)?0:polyEdgeDist(h.pts,p.x,p.y); if(isBox(h)){ const dx=Math.max(Math.abs(p.x-h.x)-h.w/2,0), dy=Math.max(Math.abs(p.y-h.y)-h.h/2,0); return Math.hypot(dx,dy); } return Math.hypot(h.x-p.x,h.y-p.y)-h.r; }
+function moveHold(h,nx,ny){ const dx=nx-h.x, dy=ny-h.y; if(h.pts) h.pts=h.pts.map((v,i)=>Math.round(v+(i%2?dy:dx))); h.x=nx; h.y=ny; }
+function scaleHold(h,f){ if(h.pts) h.pts=h.pts.map((v,i)=>Math.round((i%2?h.y:h.x)+(v-(i%2?h.y:h.x))*f)); if(isBox(h)){ h.w=Math.max(6,Math.round(h.w*f)); h.h=Math.max(6,Math.round(h.h*f)); } else h.r=Math.max(4,Math.round(h.r*f)); }
+function shp(h,pad,attrs){
+  if(h.pts){ const k=(hsize(h)+pad)/Math.max(1,hsize(h)); let d=''; for(let i=0;i<h.pts.length;i+=2) d+=(i?'L':'M')+(h.x+(h.pts[i]-h.x)*k).toFixed(1)+' '+(h.y+(h.pts[i+1]-h.y)*k).toFixed(1); return `<path d="${d}Z" stroke-linejoin="round" ${attrs}/>`; }
+  if(isBox(h)){ const w=h.w+pad*2, hh=h.h+pad*2; return `<rect x="${(h.x-w/2).toFixed(1)}" y="${(h.y-hh/2).toFixed(1)}" width="${w.toFixed(1)}" height="${hh.toFixed(1)}" rx="${Math.min(12,Math.min(w,hh)/4).toFixed(1)}" ${attrs}/>`; }
+  return `<circle cx="${h.x}" cy="${h.y}" r="${(h.r+pad).toFixed(1)}" ${attrs}/>`; }
+function overlay(wall,holds,roles,{shade=0,faint=false,selected=null,mapMode=false}={}){
+  const VH=VW*wall.aspect, byId=Object.fromEntries(holds.map(h=>[h.id,h]));
+  const used=Object.entries(roles||{}).map(([id,r])=>byId[id]?{h:byId[id],r}:null).filter(Boolean);
+  const pad=(h,k)=>Math.max(2,hsize(h)*k), NS='vector-effect="non-scaling-stroke"';  // line widths are screen pixels at any zoom
+  let s='';
+  if(shade){ s+=`<defs><mask id="cut"><rect width="${VW}" height="${VH}" fill="#fff"/>${used.map(u=>shp(u.h,pad(u.h,.12),'fill="#000"')).join('')}</mask></defs><rect width="${VW}" height="${VH}" fill="#06080b" fill-opacity="${shade}" mask="url(#cut)"/>`; }
+  if(mapMode) s+=holds.map(h=>{ const sel=h.id===selected; return shp(h,0,`fill="${sel?'rgba(34,184,240,.12)':'none'}" stroke="#000" stroke-opacity=".45" stroke-width="${sel?4:2.5}" ${NS}`)+shp(h,0,`fill="none" stroke="${sel?'#22b8f0':(h.pts?'#ffe14d':'#fff')}" stroke-width="${sel?2:1.2}" ${NS}`); }).join('');
+  s+=used.map(({h,r})=>{ const c=ROLE[r].c, p=pad(h,.1); return shp(h,p,`fill="none" stroke="${c}" stroke-opacity=".35" stroke-width="5" ${NS}`)+shp(h,p,`fill="none" stroke="${c}" stroke-width="2" ${NS}`)+(r==='finish'?shp(h,p+6,`fill="none" stroke="${c}" stroke-width="1.5" ${NS}`):''); }).join('');
+  return s;
+}
+
+/* ---------- hold detection ---------- */
+function rgb2lab(r,g,b){ const f=c=>{c/=255;return c<=.04045?c/12.92:Math.pow((c+.055)/1.055,2.4)}; r=f(r);g=f(g);b=f(b);
+  let x=(r*.4124+g*.3576+b*.1805)/.95047, y=r*.2126+g*.7152+b*.0722, z=(r*.0193+g*.1192+b*.9505)/1.08883;
+  const t=v=>v>.008856?Math.cbrt(v):7.787*v+16/116; x=t(x);y=t(y);z=t(z); return [116*y-16,500*(x-y),200*(y-z)]; }
+async function loadPixels(wall){
+  const img=await loadImg(wallSrc(wall)); const w=Math.min(1000,img.naturalWidth), h=Math.round(w*img.naturalHeight/img.naturalWidth);
+  const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d',{willReadFrequently:true}); g.drawImage(img,0,0,w,h);
+  const px=g.getImageData(0,0,w,h).data, n=w*h, L=new Float32Array(n), A=new Float32Array(n), B=new Float32Array(n);
+  for(let i=0;i<n;i++){ const o=i*4; const l=rgb2lab(px[o],px[o+1],px[o+2]); L[i]=l[0];A[i]=l[1];B[i]=l[2]; }
+  const blur=a=>{ const o=new Float32Array(n); for(let y=0;y<h;y++) for(let x=0;x<w;x++){ let s=0,k=0; for(let dy=-1;dy<=1;dy++){ const yy=y+dy; if(yy<0||yy>=h) continue; for(let dx=-1;dx<=1;dx++){ const xx=x+dx; if(xx<0||xx>=w) continue; s+=a[yy*w+xx];k++; } } o[y*w+x]=s/k; } return o; };
+  return {w,h,px,L:blur(L),A:blur(A),B:blur(B)};
+}
+function sampleBoard(P,cx,cy,rad){ let sL=0,sA=0,sB=0,sr=0,sg=0,sb=0,k=0; for(let y=Math.max(0,cy-rad);y<=Math.min(P.h-1,cy+rad);y++) for(let x=Math.max(0,cx-rad);x<=Math.min(P.w-1,cx+rad);x++){ const i=y*P.w+x; sL+=P.L[i];sA+=P.A[i];sB+=P.B[i]; sr+=P.px[i*4];sg+=P.px[i*4+1];sb+=P.px[i*4+2]; k++; } return {L:sL/k,a:sA/k,b:sB/k,rgb:[sr/k|0,sg/k|0,sb/k|0]}; }
+function estimateBoard(P){
+  const {w,h,L,A,B}=P, bins=new Map();
+  for(let y=Math.floor(h*.2);y<h*.8;y+=2) for(let x=Math.floor(w*.2);x<w*.8;x+=2){ const i=y*w+x; const k=(Math.round(L[i]/7)<<16)^(Math.round(A[i]/6)+64<<8)^(Math.round(B[i]/6)+64); const e=bins.get(k)||{n:0,L:0,a:0,b:0,i}; e.n++; e.L+=L[i]; e.a+=A[i]; e.b+=B[i]; bins.set(k,e); }
+  let best=null; bins.forEach(e=>{ if(!best||e.n>best.n) best=e; });
+  const i=best.i; return {L:best.L/best.n,a:best.a/best.n,b:best.b/best.n,rgb:[P.px[i*4],P.px[i*4+1],P.px[i*4+2]]};
+}
+function detectHolds(P,board,T,split,chalkMode=1,chalk=null,whiteRule=true){
+  const CH=[null,{c:9,br:.3,con:1.4,con2:1.8,fill:.45},{c:13,br:.45,con:1.7,con2:2.3,fill:.55}][chalkMode];
+  const {w,h,L,A,B}=P, n=w*h, WL=1.1;
+  const dist=(i,l,a,b)=>Math.hypot((L[i]-l)*WL,A[i]-a,B[i]-b);
+  // local board colour model on a coarse grid, so shading and chalk across the wall don't count as holds
+  const bs=Math.max(16,Math.round(w/22)), gw=Math.ceil(w/bs), gh=Math.ceil(h/bs), G=gw*gh;
+  let gL=new Float32Array(G),gA=new Float32Array(G),gB=new Float32Array(G),gN=new Float32Array(G);
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const i=y*w+x; if(dist(i,board.L,board.a,board.b)<T*1.7){ const g=Math.floor(y/bs)*gw+Math.floor(x/bs); gL[g]+=L[i];gA[g]+=A[i];gB[g]+=B[i];gN[g]++; } }
+  const ok=new Uint8Array(G); for(let g=0;g<G;g++) if(gN[g]>bs*bs*.12){ gL[g]/=gN[g];gA[g]/=gN[g];gB[g]/=gN[g];ok[g]=1; }
+  const onWall=new Uint8Array(G); for(let gy=0;gy<gh;gy++) for(let gx=0;gx<gw;gx++){ let k=0; for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){ const xx=gx+dx,yy=gy+dy; if(xx>=0&&yy>=0&&xx<gw&&yy<gh&&ok[yy*gw+xx]) k++; } onWall[gy*gw+gx]=k>=2?1:0; }
+  for(let pass=0;pass<40;pass++){ let missing=0; const nk=ok.slice(); for(let gy=0;gy<gh;gy++) for(let gx=0;gx<gw;gx++){ const g=gy*gw+gx; if(ok[g]) continue; let s=[0,0,0],k=0; for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){ const xx=gx+dx,yy=gy+dy; if(xx<0||yy<0||xx>=gw||yy>=gh) continue; const q=yy*gw+xx; if(ok[q]){s[0]+=gL[q];s[1]+=gA[q];s[2]+=gB[q];k++;} } if(k){ gL[g]=s[0]/k;gA[g]=s[1]/k;gB[g]=s[2]/k;nk[g]=1; } else missing++; } ok.set(nk); if(!missing) break; }
+  for(let g=0;g<G;g++) if(!ok[g]){ gL[g]=board.L;gA[g]=board.a;gB[g]=board.b; }
+  const sm=a=>{ const o=new Float32Array(G); for(let gy=0;gy<gh;gy++) for(let gx=0;gx<gw;gx++){ let s=0,k=0; for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){ const xx=gx+dx,yy=gy+dy; if(xx<0||yy<0||xx>=gw||yy>=gh) continue; s+=a[yy*gw+xx];k++; } o[gy*gw+gx]=s/k; } return o; };
+  gL=sm(gL);gA=sm(gA);gB=sm(gB);
+  const at=(a,fx,fy)=>{ const x0=Math.max(0,Math.min(gw-1,Math.floor(fx))), y0=Math.max(0,Math.min(gh-1,Math.floor(fy))), x1=Math.min(gw-1,x0+1), y1=Math.min(gh-1,y0+1), tx=Math.max(0,Math.min(1,fx-x0)), ty=Math.max(0,Math.min(1,fy-y0)); return (a[y0*gw+x0]*(1-tx)+a[y0*gw+x1]*tx)*(1-ty)+(a[y1*gw+x0]*(1-tx)+a[y1*gw+x1]*tx)*ty; };
+  let m=new Uint8Array(n); const dmap=new Float32Array(n);
+  for(let y=0;y<h;y++){ const fy=y/bs-.5; for(let x=0;x<w;x++){ const fx=x/bs-.5, i=y*w+x; const dd=dist(i,at(gL,fx,fy),at(gA,fx,fy),at(gB,fx,fy)); dmap[i]=dd; m[i]=onWall[Math.floor(y/bs)*gw+Math.floor(x/bs)]&&dd>T&&!(chalk&&L[i]<chalk.L+10&&Math.hypot((L[i]-chalk.L)*.6,A[i]-chalk.a,B[i]-chalk.b)<T*.9)?1:0; } }
+  const morph=(src,grow)=>{ const o=new Uint8Array(n); for(let y=0;y<h;y++) for(let x=0;x<w;x++){ let v=grow?0:1; for(let dy=-1;dy<=1&&(grow?!v:v);dy++) for(let dx=-1;dx<=1;dx++){ const xx=x+dx,yy=y+dy; const s=(xx<0||yy<0||xx>=w||yy>=h)?0:src[yy*w+xx]; if(grow&&s){v=1;break;} if(!grow&&!s){v=0;break;} } o[y*w+x]=v; } return o; };
+  m=morph(morph(m,false),true); // open: drop speckle and bolt holes
+  m=morph(morph(m,true),false); // close: fill small gaps inside holds
+  // colour classes so touching holds of different colours come out as separate boxes
+  let cls=null, cen=null;
+  if(split){
+    const R=rng(5), idx=[]; for(let i=0;i<n;i+=3) if(m[i]) idx.push(i);
+    const K=Math.min(12,Math.max(2,idx.length>>6)); cen=[];
+    if(idx.length>K){
+      for(let k=0;k<K;k++){ const i=idx[Math.floor(R()*idx.length)]; cen.push([L[i]*.6,A[i],B[i]]); }
+      const acc=()=>cen.map(()=>[0,0,0,0]);
+      for(let it=0;it<9;it++){ const s=acc(); for(const i of idx){ const f0=L[i]*.6,f1=A[i],f2=B[i]; let bk=0,bd=Infinity; for(let k=0;k<K;k++){ const c=cen[k],d=(f0-c[0])**2+(f1-c[1])**2+(f2-c[2])**2; if(d<bd){bd=d;bk=k;} } const t=s[bk]; t[0]+=f0;t[1]+=f1;t[2]+=f2;t[3]++; } s.forEach((t,k)=>{ if(t[3]) cen[k]=[t[0]/t[3],t[1]/t[3],t[2]/t[3]]; }); }
+      cls=new Int8Array(n).fill(-1);
+      for(let i=0;i<n;i++) if(m[i]){ const f0=L[i]*.6,f1=A[i],f2=B[i]; let bk=0,bd=Infinity; for(let k=0;k<K;k++){ const c=cen[k],d=(f0-c[0])**2+(f1-c[1])**2+(f2-c[2])**2; if(d<bd){bd=d;bk=k;} } cls[i]=bk; }
+      const c2=cls.slice(), cnt=new Int16Array(K);
+      for(let y=1;y<h-1;y++) for(let x=1;x<w-1;x++){ const i=y*w+x; if(cls[i]<0) continue; cnt.fill(0); for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){ const q=cls[i+dy*w+dx]; if(q>=0) cnt[q]++; } let bk=cls[i]; for(let k=0;k<K;k++) if(cnt[k]>cnt[bk]) bk=k; c2[i]=bk; }
+      cls=c2;
+    }
+  }
+  // connected components
+  const lab=new Int32Array(n).fill(-1), comps=[], stack=new Int32Array(n);
+  for(let s=0;s<n;s++){ if(!m[s]||lab[s]>=0) continue; const id=comps.length, c=cls?cls[s]:0; let sp=0; stack[sp++]=s; lab[s]=id;
+    const o={id,x0:w,y0:h,x1:0,y1:0,area:0,L:0,a:0,b:0,C:0,bright:0,con:0};
+    while(sp){ const i=stack[--sp], x=i%w, y=(i/w)|0; o.area++; o.L+=L[i];o.a+=A[i];o.b+=B[i]; o.C+=Math.hypot(A[i],B[i]); if(L[i]>72) o.bright++; o.con+=dmap[i]; if(x<o.x0)o.x0=x; if(x>o.x1)o.x1=x; if(y<o.y0)o.y0=y; if(y>o.y1)o.y1=y;
+      for(let dy=-1;dy<=1;dy++){ const yy=y+dy; if(yy<0||yy>=h) continue; for(let dx=-1;dx<=1;dx++){ const xx=x+dx; if(xx<0||xx>=w) continue; const q=yy*w+xx; if(m[q]&&lab[q]<0&&(!cls||cls[q]===c)){ lab[q]=id; stack[sp++]=q; } } } }
+    o.L/=o.area;o.a/=o.area;o.b/=o.area;o.C/=o.area;o.bright/=o.area;o.con/=o.area; comps.push(o); }
+  let chalkN=0;
+  // white regions: bordered mostly by board = white hold; touching a coloured hold = chalk/glare on that hold -> merge into it
+  let chalkMerged=0;
+  if(cls&&whiteRule){
+    const isWhite=o=>o.C<13&&o.L>52, wb=new Map();
+    comps.forEach((o,k)=>{ if(isWhite(o)) wb.set(k,{board:0,nb:new Map()}); });
+    if(wb.size){
+      for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const i=y*w+x, l=lab[i]; if(l<0) continue; const rec=wb.get(l); if(!rec) continue;
+        for(const q of [x>0?i-1:-1,x<w-1?i+1:-1,y>0?i-w:-1,y<h-1?i+w:-1]){ if(q<0) continue; const lq=lab[q]; if(lq===l) continue; if(lq<0) rec.board++; else rec.nb.set(lq,(rec.nb.get(lq)||0)+1); } }
+      wb.forEach((rec,k)=>{ let best=-1,bn=0,tot=rec.board; rec.nb.forEach((c,j)=>{ tot+=c; if(!wb.has(j)&&c>bn){bn=c;best=j;} }); 
+        if(best>=0&&tot&&bn/tot>=.3){ const r=comps[best], o=comps[k]; r.x0=Math.min(r.x0,o.x0);r.y0=Math.min(r.y0,o.y0);r.x1=Math.max(r.x1,o.x1);r.y1=Math.max(r.y1,o.y1); r.ids=(r.ids||[r.id]).concat(o.ids||[o.id]); r.area+=o.area; o.gone=true; chalkMerged++; } });
+    }
+  }
+  const minA=Math.max(14,n*.00006), maxA=n*.08;
+  let list=comps.filter(o=>{ if(o.gone) return false; const bw=o.x1-o.x0+1, bh=o.y1-o.y0+1, fill=o.area/(bw*bh), edge=o.x0<=2||o.y0<=2||o.x1>=w-3||o.y1>=h-3;
+    if(o.area<minA||o.area>maxA) return false;
+    if(CH&&o.C<CH.c&&o.bright<CH.br&&(o.con<T*CH.con||(fill<CH.fill&&o.con<T*CH.con2))){ chalkN++; return false; } if(edge&&o.area>n*.012) return false; const cxr=(o.x0+o.x1)/2/w, cyr=(o.y0+o.y1)/2/h; if(cxr<.025||cxr>.975||cyr<.025||cyr>.975) return false; if(edge&&Math.max(bw/bh,bh/bw)>3) return false; if(fill<.18) return false; if(Math.max(bw/bh,bh/bw)>7&&fill<.5) return false; return true; });
+  // merge fragments of the same hold (highlights, shadows) into their parent box
+  list.sort((a,b)=>b.area-a.area);
+  const keep=[];
+  for(const c of list){ let merged=false; const ca=(c.x1-c.x0+1)*(c.y1-c.y0+1);
+    for(const b of keep){ const ix=Math.min(b.x1,c.x1)-Math.max(b.x0,c.x0)+1, iy=Math.min(b.y1,c.y1)-Math.max(b.y0,c.y0)+1; if(ix<=0||iy<=0) continue;
+      const cd=Math.hypot((b.L-c.L)*.5,b.a-c.a,b.b-c.b);
+      if(ix*iy/ca>.55&&cd<34){ b.x0=Math.min(b.x0,c.x0);b.y0=Math.min(b.y0,c.y0);b.x1=Math.max(b.x1,c.x1);b.y1=Math.max(b.y1,c.y1); b.area+=c.area; b.ids=(b.ids||[b.id]).concat(c.ids||[c.id]); merged=true; break; } }
+    if(!merged) keep.push(c); }
+  const s=VW/w;
+  const holds=keep.map(o=>{
+    const ids=new Set(o.ids||[o.id]);
+    const out=traceComp(w,h,o,i=>ids.has(lab[i]));
+    const box={x:Math.round((o.x0+o.x1+1)/2*s),y:Math.round((o.y0+o.y1+1)/2*s),w:Math.round((o.x1-o.x0+1)*s+4),h:Math.round((o.y1-o.y0+1)*s+4)};
+    if(!out) return box;
+    const pts=[]; out.forEach(([x,y])=>pts.push(Math.round(x*s),Math.round(y*s)));
+    return {...box,pts};
+  });
+  return {holds,chalk:chalkN,merged:chalkMerged};
+}
+/* outline of one hold: build its local mask, smooth it, trace the outer edge, simplify */
+function traceComp(W,H,o,test,closeN=1){
+  const pad=closeN+1, x0=Math.max(0,o.x0-pad), y0=Math.max(0,o.y0-pad), x1=Math.min(W-1,o.x1+pad), y1=Math.min(H-1,o.y1+pad);
+  const bw=x1-x0+1, bh=y1-y0+1; if(bw<3||bh<3) return null;
+  let m=new Uint8Array(bw*bh);
+  for(let y=0;y<bh;y++) for(let x=0;x<bw;x++) if(test((y+y0)*W+x+x0)) m[y*bw+x]=1;
+  const morph=(src,grow)=>{ const r=new Uint8Array(bw*bh); for(let y=0;y<bh;y++) for(let x=0;x<bw;x++){ let v=grow?0:1; for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){ const xx=x+dx,yy=y+dy; const q=(xx<0||yy<0||xx>=bw||yy>=bh)?0:src[yy*bw+xx]; if(grow&&q) v=1; if(!grow&&!q) v=0; } r[y*bw+x]=v; } return r; };
+  for(let k=0;k<closeN;k++) m=morph(m,true); for(let k=0;k<closeN;k++) m=morph(m,false); // close so fragments and bolt holes form one shape
+  // keep the largest piece
+  const cl=new Int32Array(bw*bh).fill(-1), st=[]; let best=-1,bestN=0,id=0;
+  for(let i=0;i<bw*bh;i++){ if(!m[i]||cl[i]>=0) continue; let n=0; st.push(i); cl[i]=id; while(st.length){ const j=st.pop(); n++; const x=j%bw,y=(j/bw)|0; for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){ const xx=x+dx,yy=y+dy; if(xx<0||yy<0||xx>=bw||yy>=bh) continue; const q=yy*bw+xx; if(m[q]&&cl[q]<0){cl[q]=id;st.push(q);} } } if(n>bestN){bestN=n;best=id;} id++; }
+  if(best<0||bestN<6) return null;
+  const on=(x,y)=>x>=0&&y>=0&&x<bw&&y<bh&&cl[y*bw+x]===best;
+  let sx=-1,sy=-1; outer: for(let y=0;y<bh;y++) for(let x=0;x<bw;x++) if(on(x,y)){sx=x;sy=y;break outer;}
+  const DX=[1,1,0,-1,-1,-1,0,1], DY=[0,1,1,1,0,-1,-1,-1];
+  let cx=sx,cy=sy,d=0; const path=[[cx,cy]], cap=bw*bh*4;
+  for(let step=0;step<cap;step++){
+    let found=false;
+    for(let k=0;k<8;k++){ const nd=(d+6+k)%8, nx=cx+DX[nd], ny=cy+DY[nd]; if(on(nx,ny)){ cx=nx;cy=ny;d=nd;found=true;break; } }
+    if(!found) break;
+    if(cx===sx&&cy===sy) break;
+    path.push([cx,cy]);
+  }
+  if(path.length<3) return null;
+  // pixel centres to photo coordinates, then simplify (Douglas–Peucker) to at most ~48 points
+  const P=path.map(([x,y])=>[x+x0+.5,y+y0+.5]);
+  const rdp=(pts,eps)=>{ if(pts.length<3) return pts; const [ax,ay]=pts[0],[bx,by]=pts[pts.length-1]; const vx=bx-ax,vy=by-ay,l=Math.hypot(vx,vy)||1; let md=0,mi=0; for(let i=1;i<pts.length-1;i++){ const dd=Math.abs((pts[i][0]-ax)*vy-(pts[i][1]-ay)*vx)/l; if(dd>md){md=dd;mi=i;} } if(md<=eps) return [pts[0],pts[pts.length-1]]; return rdp(pts.slice(0,mi+1),eps).slice(0,-1).concat(rdp(pts.slice(mi),eps)); };
+  let far=0,fd=0; P.forEach((p,i)=>{ const dd=Math.hypot(p[0]-P[0][0],p[1]-P[0][1]); if(dd>fd){fd=dd;far=i;} });
+  let eps=.8, res;
+  do{ res=rdp(P.slice(0,far+1),eps).slice(0,-1).concat(rdp(P.slice(far).concat([P[0]]),eps).slice(0,-1)); eps*=1.4; } while(res.length>48);
+  return res.length>=3?res:null;
+}
+const legend=()=>`<div class="legend">${Object.values(ROLE).map(r=>`<span><i class="dot" style="color:${r.c}"></i>${r.label}</span>`).join('')}</div>`;
+
+/* ---------- tap to trace: grow a region out from the tapped pixel until the colour changes ---------- */
+const pixCache=new Map();
+function wallPixels(w){ if(!pixCache.has(w.id)) pixCache.set(w.id,loadPixels(w).then(P=>{ P.board=estimateBoard(P); return P; }).catch(e=>{ pixCache.delete(w.id); throw e; })); return pixCache.get(w.id); }
+// board colour near each part of the wall (lighting varies across a wall), cached per photo
+function boardGrid(P,board){
+  if(P.bgrid) return P.bgrid;
+  const {w,h,L,A,B}=P, bs=Math.max(16,Math.round(w/24)), gw=Math.ceil(w/bs), gh=Math.ceil(h/bs), G=gw*gh, T=22;
+  let gL=new Float32Array(G),gA=new Float32Array(G),gB=new Float32Array(G); const gN=new Float32Array(G);
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const i=y*w+x; if(Math.hypot((L[i]-board.L)*1.1,A[i]-board.a,B[i]-board.b)<T*.8){ const g=Math.floor(y/bs)*gw+Math.floor(x/bs); gL[g]+=L[i];gA[g]+=A[i];gB[g]+=B[i];gN[g]++; } }
+  const ok=new Uint8Array(G); for(let g=0;g<G;g++) if(gN[g]>bs*bs*.12){ gL[g]/=gN[g];gA[g]/=gN[g];gB[g]/=gN[g]; if(Math.hypot((gL[g]-board.L)*1.1,gA[g]-board.a,gB[g]-board.b)<11) ok[g]=1; }
+  for(let pass=0;pass<40;pass++){ let miss=0; const nk=ok.slice(); for(let gy=0;gy<gh;gy++) for(let gx=0;gx<gw;gx++){ const g=gy*gw+gx; if(ok[g]) continue; let a=0,bb=0,c=0,k=0; for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){ const xx=gx+dx,yy=gy+dy; if(xx<0||yy<0||xx>=gw||yy>=gh) continue; const q=yy*gw+xx; if(ok[q]){a+=gL[q];bb+=gA[q];c+=gB[q];k++;} } if(k){gL[g]=a/k;gA[g]=bb/k;gB[g]=c/k;nk[g]=1;} else miss++; } ok.set(nk); if(!miss) break; }
+  for(let g=0;g<G;g++) if(!ok[g]){ gL[g]=board.L;gA[g]=board.a;gB[g]=board.b; }
+  return P.bgrid={bs,gw,gh,gL,gA,gB};
+}
+// extra smoothing so wood grain and stone speckle read as one surface
+function smoothLab(P){
+  if(P.sL) return; const {w,h}=P, R=2;
+  const box=src=>{ const t=new Float32Array(w*h), o=new Float32Array(w*h);
+    for(let y=0;y<h;y++){ let acc=0; for(let x=-R;x<=R;x++) acc+=src[y*w+Math.min(w-1,Math.max(0,x))]; for(let x=0;x<w;x++){ t[y*w+x]=acc/(2*R+1); acc+=src[y*w+Math.min(w-1,x+R+1)]-src[y*w+Math.max(0,x-R)]; } }
+    for(let x=0;x<w;x++){ let acc=0; for(let y=-R;y<=R;y++) acc+=t[Math.min(h-1,Math.max(0,y))*w+x]; for(let y=0;y<h;y++){ o[y*w+x]=acc/(2*R+1); acc+=t[Math.min(h-1,y+R+1)*w+x]-t[Math.max(0,y-R)*w+x]; } }
+    return o; };
+  P.sL=box(P.L); P.sA=box(P.A); P.sB=box(P.B);
+}
+function growOnce(P,sx,sy,tol,bg,seed){
+  const {w,h}=P, L=P.sL, A=P.sA, B=P.sB, n=w*h, {bs,gw,gL,gA,gB}=bg;
+  const seedC=Math.hypot(seed.a,seed.b), seedWhite=seedC<13, useStep=seedC>=10;
+  const toBoard=(j,x,y)=>{ const g=Math.floor(y/bs)*gw+Math.floor(x/bs); return Math.hypot((L[j]-gL[g])*1.1,A[j]-gA[g],B[j]-gB[g]); };
+  const rawBoard=(j,x,y)=>{ const g=Math.floor(y/bs)*gw+Math.floor(x/bs); return Math.hypot((P.L[j]-gL[g])*1.1,P.A[j]-gA[g],P.B[j]-gB[g]); };
+  const chalky=j=>!seedWhite&&Math.hypot(A[j],B[j])<13&&L[j]>50;
+  const vis=new Uint8Array(n), depth=new Uint8Array(n), q=new Int32Array(n), CHALK_STEPS=4, maxA=n*.06, maxW=w*.35, maxH=h*.45;
+  let qh=0,qt=0,mL=seed.L,mA=seed.a,mB=seed.b,cnt=1,x0=sx,x1=sx,y0=sy,y1=sy;
+  const s0=sy*w+sx; vis[s0]=1; q[qt++]=s0;
+  while(qh<qt){
+    const i=q[qh++], x=i%w, y=(i/w)|0; if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y;
+    for(let k=0;k<4;k++){
+      const j=k===0?(x>0?i-1:-1):k===1?(x<w-1?i+1:-1):k===2?(y>0?i-w:-1):(y<h-1?i+w:-1);
+      if(j<0||vis[j]) continue;
+      const jx=j%w, jy=(j/w)|0;
+      const d=Math.hypot((L[j]-mL)*.8,A[j]-mA,B[j]-mB), tb=toBoard(j,jx,jy);
+      const step=useStep?Math.hypot((L[j]-L[i])*.8,A[j]-A[i],B[j]-B[i]):Infinity;
+      if(rawBoard(j,jx,jy)<6.5&&depth[i]===0) continue;
+      if((d<tol&&d<tb*.9)||(depth[i]===0&&step<tol*.28&&tb>16&&d<tol*1.7)){ vis[j]=1; depth[j]=0; q[qt++]=j; if(cnt<600){ cnt++; mL+=(L[j]-mL)/cnt; mA+=(A[j]-mA)/cnt; mB+=(B[j]-mB)/cnt; } }
+      else if(chalky(j)&&depth[i]<CHALK_STEPS){ vis[j]=1; depth[j]=depth[i]+1; q[qt++]=j; }
+    }
+    if(qt>maxA||x1-x0>maxW||y1-y0>maxH||x0<2||y0<2||x1>w-3||y1>h-3) return {overflow:true};
+  }
+  return {vis,qt,x0,x1,y0,y1};
+}
+// Two holds joined by a thin strip: erode until the strip breaks, keep the piece under the tap, grow it back within the original shape.
+function separateAtNeck(vis,W,H,sx,sy,x0,x1,y0,y1){
+  const pad=6, bx0=Math.max(0,x0-pad), by0=Math.max(0,y0-pad), bx1=Math.min(W-1,x1+pad), by1=Math.min(H-1,y1+pad), bw=bx1-bx0+1, bh=by1-by0+1, N=bw*bh;
+  const orig=new Uint8Array(N); let area=0;
+  for(let y=0;y<bh;y++) for(let x=0;x<bw;x++){ if(vis[(y+by0)*W+x+bx0]===1){ orig[y*bw+x]=1; area++; } }
+  if(area<60) return null;
+  // distance from each pixel to the outside (chamfer)
+  const D=new Float32Array(N); for(let i=0;i<N;i++) D[i]=orig[i]?1e9:0;
+  for(let y=0;y<bh;y++) for(let x=0;x<bw;x++){ const i=y*bw+x; if(!D[i]) continue; let v=D[i]; if(x>0) v=Math.min(v,D[i-1]+1); if(y>0) v=Math.min(v,D[i-bw]+1); if(x>0&&y>0) v=Math.min(v,D[i-bw-1]+1.414); if(x<bw-1&&y>0) v=Math.min(v,D[i-bw+1]+1.414); if(x===0||y===0||x===bw-1||y===bh-1) v=Math.min(v,1); D[i]=v; }
+  for(let y=bh-1;y>=0;y--) for(let x=bw-1;x>=0;x--){ const i=y*bw+x; if(!D[i]) continue; let v=D[i]; if(x<bw-1) v=Math.min(v,D[i+1]+1); if(y<bh-1) v=Math.min(v,D[i+bw]+1); if(x<bw-1&&y<bh-1) v=Math.min(v,D[i+bw+1]+1.414); if(x>0&&y<bh-1) v=Math.min(v,D[i+bw-1]+1.414); D[i]=v; }
+  const lx=sx-bx0, ly=sy-by0; let seed=ly*bw+lx;
+  if(!orig[seed]) return null;
+  let maxD=0; for(let i=0;i<N;i++) if(D[i]>maxD) maxD=D[i];
+  const lab=new Int32Array(N), st=new Int32Array(N);
+  // try growing erosion depths; stop at the first depth that splits off a sizeable second piece
+  for(let r=1.5;r<=Math.min(maxD*.6,9);r+=1){
+    lab.fill(-1); const comps=[];
+    for(let i=0;i<N;i++){ if(D[i]<=r||lab[i]>=0) continue; let sp=0,n=0; st[sp++]=i; lab[i]=comps.length;
+      while(sp){ const j=st[--sp]; n++; const x=j%bw,y=(j/bw)|0; for(const q of [x>0?j-1:-1,x<bw-1?j+1:-1,y>0?j-bw:-1,y<bh-1?j+bw:-1]){ if(q>=0&&D[q]>r&&lab[q]<0){ lab[q]=comps.length; st[sp++]=q; } } }
+      comps.push(n); }
+    const big=comps.filter(n=>n>=Math.max(12,area*.06));
+    if(big.length<2) continue;
+    // which piece belongs to the tap: the one containing it, else the nearest
+    let mine=lab[seed];
+    if(mine<0){ let bd=1e9; for(let i=0;i<N;i++){ if(lab[i]<0||comps[lab[i]]<12) continue; const dx=i%bw-lx, dy=((i/bw)|0)-ly, d=dx*dx+dy*dy; if(d<bd){bd=d;mine=lab[i];} } }
+    if(mine<0) return null;
+    // grow back: pixels of the original shape closer to my core than to any other core
+    const own=new Int32Array(N).fill(-1), dist=new Float32Array(N).fill(1e9), q=[];
+    for(let i=0;i<N;i++) if(lab[i]>=0&&comps[lab[i]]>=12){ own[i]=lab[i]; dist[i]=0; q.push(i); }
+    for(let h2=0;h2<q.length;h2++){ const j=q[h2], x=j%bw,y=(j/bw)|0; for(const k of [x>0?j-1:-1,x<bw-1?j+1:-1,y>0?j-bw:-1,y<bh-1?j+bw:-1]){ if(k<0||!orig[k]||own[k]>=0) continue; own[k]=own[j]; dist[k]=dist[j]+1; q.push(k); } }
+    const out=new Uint8Array(W*H); let qt=0,nx0=W,nx1=0,ny0=H,ny1=0;
+    for(let i=0;i<N;i++) if(own[i]===mine){ const x=i%bw+bx0, y=((i/bw)|0)+by0; out[y*W+x]=1; qt++; if(x<nx0)nx0=x; if(x>nx1)nx1=x; if(y<ny0)ny0=y; if(y>ny1)ny1=y; }
+    if(qt<10) return null;
+    return {vis:out,qt,x0:nx0,x1:nx1,y0:ny0,y1:ny1};
+  }
+  return null;
+}
+function growHold(P,vx,vy,tol,board,nudged){
+  const r0=growHoldAt(P,vx,vy,tol,board);
+  if(!r0.err||nudged||/Tap inside|find this hold/.test(r0.err)) return r0;
+  // tap landed on a seam, bolt or shadow: try the spots around it and keep the biggest clean trace
+  let best=null;
+  for(const [dx,dy] of [[4,0],[-4,0],[0,4],[0,-4],[3,3],[-3,3],[3,-3],[-3,-3]]){ const r=growHoldAt(P,vx+dx,vy+dy,tol,board); if(!r.err&&(!best||r.w*r.h>best.w*best.h)) best=r; }
+  return best||r0;
+}
+function growHoldAt(P,vx,vy,tol,board){
+  const {w,h}=P, s=w/VW, sx=Math.round(vx*s), sy=Math.round(vy*s);
+  if(sx<3||sy<3||sx>=w-3||sy>=h-3) return {err:'Tap inside the photo.'};
+  smoothLab(P); const bg=boardGrid(P,board);
+  let sL=0,sA=0,sB=0,k=0; for(let y=sy-1;y<=sy+1;y++) for(let x=sx-1;x<=sx+1;x++){ const i=y*w+x; sL+=P.sL[i];sA+=P.sA[i];sB+=P.sB[i];k++; }
+  const seed={L:sL/k,a:sA/k,b:sB/k}, g=Math.floor(sy/bg.bs)*bg.gw+Math.floor(sx/bg.bs);
+  if(Math.hypot((seed.L-bg.gL[g])*1.1,seed.a-bg.gA[g],seed.b-bg.gB[g])<7) return {err:'That spot looks like bare board. Tap the middle of a hold.'};
+  let r=null;
+  for(const f of [1,.78,.6,.45]){ r=growOnce(P,sx,sy,tol*f,bg,seed); if(!r.overflow) break; }  // runaway trace: retry tighter
+  if(r.overflow) return {err:"Couldn't find this hold's edge. Lower the edge tolerance and try again."};
+  let {vis,qt,x0,x1,y0,y1}=r;
+  const cut=separateAtNeck(vis,w,h,sx,sy,x0,x1,y0,y1);
+  if(cut){ vis=cut.vis; qt=cut.qt; x0=cut.x0; x1=cut.x1; y0=cut.y0; y1=cut.y1; }
+  if(qt<10) return {err:'That area is too small to trace. Zoom in and tap the middle of the hold, or raise the edge tolerance.'};
+  const out=traceComp(w,h,{x0,y0,x1,y1},i=>vis[i]===1,Math.max(2,Math.min(9,Math.round(Math.sqrt(qt)/9))));
+  if(!out) return {err:'Could not trace that hold.'};
+  const kk=VW/w, pts=[]; out.forEach(([x,y])=>pts.push(Math.round(x*kk),Math.round(y*kk)));
+  return {x:Math.round((x0+x1+1)/2*kk),y:Math.round((y0+y1+1)/2*kk),w:Math.round((x1-x0+1)*kk+4),h:Math.round((y1-y0+1)*kk+4),pts};
+}
+const TRACE_TOL=[0,8,10,12,14,16,18,21,24,28,32];
+function tapModeRow(withSize){ return `<div class="row" style="margin-bottom:8px"><span class="small muted">Tapping bare wall</span><div class="seg" id="tapm"><button data-m="trace" aria-pressed="${prefs.tapTrace!==false}">Traces hold</button><button data-m="circle" aria-pressed="${prefs.tapTrace===false}">Places circle</button></div></div>
+  <label class="field" id="tolf" ${prefs.tapTrace===false?'hidden':''} style="margin-bottom:8px"><span>Edge tolerance: <b id="tolv">${prefs.traceTol??5}</b> <span class="muted" style="font-weight:400">(lower stops at subtle edges, higher fills more of a shaded hold)</span></span><input type="range" class="range" id="tol" min="1" max="10" value="${prefs.traceTol??5}"></label>${withSize?`
+  <label class="field" id="crf" ${prefs.tapTrace===false?'':'hidden'} style="margin-bottom:8px"><span>Circle size: <b id="crv">${prefs.mapR}</b> <span class="muted" style="font-weight:400">(also resizes the circle you just placed)</span></span><input type="range" class="range" id="cr" min="6" max="90" value="${prefs.mapR}"></label>`:''}`; }
+function bindTapModeRow(onSize){
+  $('#tapm').onclick=e=>{ const b=e.target.closest('[data-m]'); if(!b) return; prefs.tapTrace=b.dataset.m==='trace'; savePrefs(); $('#tapm').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b)); $('#tolf').hidden=!prefs.tapTrace; if($('#crf')) $('#crf').hidden=prefs.tapTrace; };
+  if($('#cr')) $('#cr').oninput=e=>{ prefs.mapR=+e.target.value; $('#crv').textContent=prefs.mapR; savePrefs(); onSize&&onSize(prefs.mapR); };
+  $('#tol').oninput=e=>{ prefs.traceTol=+e.target.value; $('#tolv').textContent=prefs.traceTol; savePrefs(); };
+}
+async function traceAt(w,p,board){
+  const P=await wallPixels(w);
+  return growHold(P,p.x,p.y,TRACE_TOL[prefs.traceTol??5],board||P.board);
+}
+
+/* ---------- derived data ---------- */
+function ticksByProblem(){ const m={}; Object.values(all('ticks')).forEach(t=>{ (m[t.problemId]=m[t.problemId]||[]).push(t); }); Object.values(m).forEach(a=>a.sort((x,y)=>(y.at||'').localeCompare(x.at||''))); return m; }
+function summary(ts=[],who){
+  const me=who||Me.id, mine=ts.filter(t=>who?t.userId===who:isMine(t)), mySends=mine.filter(t=>t.sent);
+  const firstSend=mySends.length?mySends.reduce((a,b)=>(a.at<b.at?a:b)):null;
+  const allSends=ts.filter(t=>t.sent), graded=allSends.filter(t=>t.grade!=null), stars=allSends.filter(t=>t.stars);
+  const senders=new Set(allSends.map(t=>t.demo?'demo':t.userId));
+  return {sent:mySends.length>0,flash:!!firstSend&&firstSend.attempts===1&&!mine.some(t=>!t.sent&&t.at<firstSend.at),attempts:mine.reduce((a,t)=>a+(t.attempts||0),0),
+    sends:senders.size,crowd:graded.length?Math.round(graded.reduce((a,t)=>a+t.grade,0)/graded.length):null,stars:stars.length?stars.reduce((a,t)=>a+t.stars,0)/stars.length:0};
+}
+const problemsOn=wid=>Object.values(all('problems')).filter(p=>p.wallId===wid);
+const filters={};
+function getF(wid){ return filters[wid]||(filters[wid]={q:'',gmin:0,gmax:FONT.length-1,status:'all',sort:'new',tags:[]}); }
+function filtered(wid){
+  const f=getF(wid), tb=ticksByProblem(), q=f.q.trim().toLowerCase();
+  let list=problemsOn(wid).map(p=>({p,s:summary(tb[p.id])}));
+  const full=f.gmin===0&&f.gmax===FONT.length-1;
+  list=list.filter(({p,s})=>(p.grade<0?(full||f.status==='proj'):(p.grade>=f.gmin&&p.grade<=f.gmax))&&(!q||(p.name+' '+(p.setter||'')).toLowerCase().includes(q))&&(f.status==='all'||(f.status==='proj'?p.grade<0:f.status==='todo'?!s.sent:s.sent)));
+  const by={new:(a,b)=>(b.p.createdAt||'').localeCompare(a.p.createdAt||''),easy:(a,b)=>(a.p.grade<0?999:a.p.grade)-(b.p.grade<0?999:b.p.grade)||a.p.name.localeCompare(b.p.name),hard:(a,b)=>(b.p.grade<0?-999:b.p.grade)-(a.p.grade<0?-999:a.p.grade)||a.p.name.localeCompare(b.p.name),popular:(a,b)=>b.s.sends-a.s.sends,name:(a,b)=>a.p.name.localeCompare(b.p.name)};
+  return list.sort(by[f.sort]||by.new);
+}
+
+/* ---------- navigation ---------- */
+let view={name:'walls'};
+const STICKY=['set','map','auth','crew'];
+function go(v){ view=v; window.scrollTo(0,0); renderNow(true); }
+let rq=false; function scheduleRender(){ if(rq) return; rq=true; requestAnimationFrame(()=>{ rq=false; renderNow(false); }); }
+function renderNow(force){
+  if(!force&&STICKY.includes(view.name)) return;
+  const y=window.scrollY;
+  const fn={walls:vWalls,wall:vWall,problem:vProblem,set:vSet,map:vMap,stats:vStats,auth:vAuth,crew:vCrew,loading:vLoading}[view.name]||vWalls;
+  fn(); if(!force) window.scrollTo(0,y);
+}
+const app=$('#app');
+const topbar=(title,left,right='')=>`<header class="topbar">${left||''}<h1>${esc(title)}</h1>${right}</header>`;
+const backBtn=(to,label='Back')=>`<button class="iconbtn" data-back='${esc(JSON.stringify(to))}' aria-label="${label}">${I.back}</button>`;
+app.addEventListener('click',e=>{ const b=e.target.closest('[data-back]'); if(b){ const to=JSON.parse(b.dataset.back); if(view.dirty){ confirmSheet('Leave without saving?','Your changes on this screen will be lost.','Discard changes',true).then(ok=>ok&&go(to)); } else go(to); } });
+function bar(html){ return `<div class="bar"><div class="bar-in">${html}</div></div>`; }
+
+/* ---------- sheet ---------- */
+const sroot=$('#sheet-root');
+function openSheet(html,mount){ sroot.innerHTML=`<div class="scrim"></div><div class="sheet" role="dialog" aria-modal="true"><div class="sheet-in"><div class="grab"></div>${html}</div></div>`; sroot.hidden=false; $('.scrim',sroot).onclick=closeSheet; mount&&mount($('.sheet',sroot)); }
+function closeSheet(){ sroot.hidden=true; sroot.innerHTML=''; }
+function confirmSheet(title,body,label,danger){ return new Promise(res=>{ openSheet(`<h2>${esc(title)}</h2><p class="muted" style="margin:0">${esc(body)}</p><div class="row"><button class="btn grow" id="cN">Cancel</button><button class="btn grow ${danger?'danger':'primary'}" id="cY">${esc(label)}</button></div>`,s=>{ $('#cN',s).onclick=()=>{closeSheet();res(false)}; $('#cY',s).onclick=()=>{closeSheet();res(true)}; $('.scrim',sroot).onclick=()=>{closeSheet();res(false)}; }); }); }
+
+/* ---------- views: walls ---------- */
+function vWalls(){
+  const walls=Object.values(all('walls')).sort((a,b)=>(a.demo?1:0)-(b.demo?1:0)||(b.createdAt||'').localeCompare(a.createdAt||''));
+  const own=walls.filter(w=>!w.demo);
+  const cnt=wid=>problemsOn(wid).length;
+  app.innerHTML=topbar(Crew.name||'Sprayboard','',`<button class="iconbtn" id="prefs" aria-label="Settings">${I.gear}</button>`)+
+  (own.length?'':`<div class="intro"><h2>Set up your home wall</h2><p class="muted">Take a photo of your spray wall, tap to mark the holds, then set problems with start, hand, foot and finish holds. Log attempts and sends and watch your grades climb.</p><div><button class="btn primary" data-add>${I.plus} Add your wall</button></div></div>`)+
+  `<div class="section"><div class="walls">${walls.map(w=>`<button class="wallcard" data-wall="${esc(w.id)}"><img src="${esc(wallSrc(w))}" alt=""><div class="stack" style="gap:4px"><div class="nm">${esc(w.name)}</div><div class="muted small">${w.angle}° · ${w.holds.length} holds · ${cnt(w.id)} problems</div>${w.demo?'<div><span class="badge">Example</span></div>':''}</div></button>`).join('')}</div></div>
+  <p class="muted small" style="margin-top:22px">Crew: <b>${esc(Crew.name)}</b> · ${Object.keys(Crew.members).length} climber${Object.keys(Crew.members).length===1?'':'s'} · join code <b style="letter-spacing:.08em">${esc(Crew.code)}</b></p>`+
+  bar(`<button class="btn primary grow" data-add>${I.plus} Add a wall</button>`);
+  app.querySelectorAll('[data-wall]').forEach(b=>b.onclick=()=>go({name:'wall',wallId:b.dataset.wall}));
+  document.querySelectorAll('[data-add]').forEach(b=>b.onclick=addWallSheet);
+  $('#prefs').onclick=prefsSheet;
+}
+function prefsSheet(){
+  const members=Object.entries(Crew.members).sort((a,b)=>a[1].localeCompare(b[1]));
+  const others=Crew.list.filter(c=>c.id!==Crew.id);
+  openSheet(`<h2>Settings</h2>
+  <label class="field"><span>Your name (shown on your sends and problems)</span><input class="input" id="pnm" value="${esc(Me.name)}" maxlength="40"></label>
+  <div class="field"><span>Grade scale</span><div class="seg" id="gs"><button data-g="v" aria-pressed="${prefs.grades==='v'}">Hueco (V)</button><button data-g="font" aria-pressed="${prefs.grades==='font'}">Font</button></div></div>
+  <label class="row"><input type="checkbox" id="hd" ${prefs.hideDemo?'checked':''}> Hide the example wall</label>
+  <div class="section" style="margin-top:6px"><h3>Crew: ${esc(Crew.name)}</h3>
+    <div class="row"><span class="grow">Join code <b style="font-size:20px;letter-spacing:.12em">${esc(Crew.code)}</b></span><button class="btn" id="cpy">Copy</button></div>
+    <p class="muted small" style="margin:0">Send this code to your mates. They sign up in the app, choose Join a crew and type it in.</p>
+    <div class="small">${members.map(([id,n])=>`${esc(n)}${id===Me.id?' (you)':''}${id===Crew.ownerId?' · owner':''}`).join('<br>')}</div>
+    ${others.length?`<label class="field"><span>Switch crew</span><select class="input" id="swc"><option value="">${esc(Crew.name)}</option>${others.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select></label>`:''}
+    <div class="row"><button class="btn grow" id="newc">Join or start another crew</button>${Crew.ownerId!==Me.id?`<button class="btn danger" id="leave">Leave crew</button>`:''}</div>
+  </div>
+  <div class="section" style="margin-top:6px"><h3>Bring in your old wall</h3>
+    <p class="muted small" style="margin:0">If you set problems in the claude.ai version, export them there (Settings, Export), then choose the file here.</p>
+    <label class="btn"><input type="file" accept="application/json,.json" id="imp" hidden>Import a Sprayboard export</label>
+  </div>
+  <div class="row" style="margin-top:6px"><span class="muted small grow">Signed in as ${esc(Me.email)}</span><button class="btn" id="out">Sign out</button></div>
+  <button class="btn primary" id="pd">Done</button>`,s=>{
+    s.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{ prefs.grades=b.dataset.g; s.querySelectorAll('[data-g]').forEach(x=>x.setAttribute('aria-pressed',x===b)); });
+    $('#cpy',s).onclick=async()=>{ try{ await navigator.clipboard.writeText(Crew.code); toast('Join code copied'); }catch(e){ toast('Join code: '+Crew.code); } };
+    if($('#swc',s)) $('#swc',s).onchange=async e=>{ if(!e.target.value) return; closeSheet(); await openCrew(e.target.value); };
+    $('#newc',s).onclick=()=>{ closeSheet(); go({name:'crew',adding:true}); };
+    if($('#leave',s)) $('#leave',s).onclick=async()=>{ if(!await confirmSheet(`Leave ${Crew.name}?`,'You will lose access to its walls. Your logs stay with the crew. You can rejoin with the code.','Leave crew',true)) return;
+      const {error}=await sb.from('crew_members').delete().eq('crew_id',Crew.id).eq('user_id',Me.id); if(error) return toast(dbError(error)); prefs.crewId=null; savePrefs(); await afterSignIn(); };
+    $('#imp',s).onchange=e=>{ const f=e.target.files[0]; if(f){ closeSheet(); importExport(f); } };
+    $('#out',s).onclick=async()=>{ closeSheet(); await sb.auth.signOut(); };
+    $('#pd',s).onclick=async()=>{ prefs.hideDemo=$('#hd',s).checked; savePrefs();
+      const nm=$('#pnm',s).value.trim(); if(nm&&nm!==Me.name){ const {error}=await sb.from('profiles').update({display_name:nm}).eq('id',Me.id); if(error) toast(dbError(error)); else { Me.name=nm; Crew.members[Me.id]=nm; } }
+      closeSheet(); renderNow(true); };
+  });
+}
+
+/* ---------- accounts and crews ---------- */
+function vLoading(){ app.innerHTML=topbar('Sprayboard')+`<div class="intro"><p class="muted" style="margin:0">${esc(view.msg||'Loading your wall…')}</p>${view.retry?`<div><button class="btn primary" id="rt">Try again</button></div>`:''}</div>`; if(view.retry) $('#rt').onclick=()=>boot(); }
+function vAuth(){
+  const up=view.mode==='up';
+  app.innerHTML=topbar('Sprayboard')+`<div class="intro">
+    <h2>${up?'Create your account':'Sign in'}</h2>
+    <p class="muted" style="margin:0">${up?'Your own logbook and stats, shared walls with your crew.':'Welcome back. Sign in to see your crew\'s walls.'}</p>
+    <form id="af" class="stack" novalidate>
+      ${up?`<label class="field"><span>Your name</span><input class="input" id="an" autocomplete="nickname" maxlength="40" placeholder="Shown on your sends"></label>`:''}
+      <label class="field"><span>Email</span><input class="input" id="ae" type="email" autocomplete="email" inputmode="email"></label>
+      <label class="field"><span>Password</span><input class="input" id="ap" type="password" autocomplete="${up?'new-password':'current-password'}" placeholder="${up?'At least 6 characters':''}"></label>
+      <div class="err" id="aerr" hidden></div>
+      <div class="small" id="amsg" hidden></div>
+      <button class="btn primary" id="ago" type="submit">${up?'Create account':'Sign in'}</button>
+    </form>
+    <div class="row"><button class="btn ghost grow" id="asw">${up?'I already have an account':'New here? Create an account'}</button>${up?'':`<button class="btn ghost" id="afg">Forgot password</button>`}</div>
+  </div>`;
+  const err=m=>{ $('#aerr').textContent=m; $('#aerr').hidden=!m; };
+  $('#asw').onclick=()=>go({name:'auth',mode:up?'in':'up'});
+  if($('#afg')) $('#afg').onclick=async()=>{ const em=$('#ae').value.trim(); if(!em) return err('Type your email first, then tap Forgot password.');
+    const {error}=await sb.auth.resetPasswordForEmail(em,{redirectTo:location.origin+location.pathname}); if(error) return err(dbError(error)); err(''); $('#amsg').textContent='Check your email for a link to set a new password.'; $('#amsg').hidden=false; };
+  $('#af').onsubmit=async e=>{ e.preventDefault(); err('');
+    const em=$('#ae').value.trim(), pw=$('#ap').value, nm=up?$('#an').value.trim():'';
+    if(up&&!nm) return err('Add your name so your crew knows who sent what.');
+    if(!/^\S+@\S+\.\S+$/.test(em)) return err('Enter a valid email address.');
+    if(pw.length<6) return err('Passwords need at least 6 characters.');
+    const b=$('#ago'); b.disabled=true; b.textContent=up?'Creating account…':'Signing in…';
+    const res=up?await sb.auth.signUp({email:em,password:pw,options:{data:{display_name:nm},emailRedirectTo:location.origin+location.pathname}}):await sb.auth.signInWithPassword({email:em,password:pw});
+    b.disabled=false; b.textContent=up?'Create account':'Sign in';
+    if(res.error) return err(/Invalid login/i.test(res.error.message)?'That email and password don\'t match. Check them or tap Forgot password.':/registered/i.test(res.error.message)?'That email already has an account. Sign in instead.':dbError(res.error));
+    if(up&&!res.data.session){ $('#amsg').textContent='Account created. Check your email and tap the confirmation link, then sign in here.'; $('#amsg').hidden=false; return; }
+    await afterSignIn(res.data.user);
+  };
+}
+function vCrew(){
+  app.innerHTML=topbar(view.adding?'Crews':'Your crew',view.adding?backBtn({name:'walls'}):'')+`
+  <div class="intro"><h2>Join a crew</h2><p class="muted" style="margin:0">Got a code from a mate? Type it in to get their wall.</p>
+    <form id="jf" class="row" novalidate><input class="input grow" id="jc" maxlength="6" autocapitalize="characters" autocomplete="off" placeholder="6-letter code" style="text-transform:uppercase;letter-spacing:.12em;flex:1;width:auto"><button class="btn primary" type="submit">Join</button></form>
+    <div class="err" id="jerr" hidden></div></div>
+  <div class="intro" style="margin-top:14px"><h2>Start a crew</h2><p class="muted" style="margin:0">For your own wall. You'll get a code to share with your mates.</p>
+    <form id="cf" class="row" novalidate><input class="input grow" id="cn" maxlength="40" placeholder="e.g. Shed Crew" style="flex:1;width:auto"><button class="btn primary" type="submit">Start</button></form>
+    <div class="err" id="cerr" hidden></div></div>
+  ${view.adding?'':`<div class="row" style="margin-top:14px"><span class="muted small grow">Signed in as ${esc(Me.email)}</span><button class="btn" id="out">Sign out</button></div>`}`;
+  if($('#out')) $('#out').onclick=()=>sb.auth.signOut();
+  $('#jf').onsubmit=async e=>{ e.preventDefault(); const code=$('#jc').value.trim().toUpperCase(); const er=$('#jerr');
+    if(code.length<6){ er.textContent='Codes are 6 letters and numbers.'; er.hidden=false; return; }
+    const {data,error}=await sb.rpc('join_crew',{code}); if(error){ er.textContent=/No crew/.test(error.message)?'No crew has that code. Check it with whoever sent it.':dbError(error); er.hidden=false; return; }
+    toast('Joined '+data.name); prefs.crewId=data.id; savePrefs(); await afterSignIn(); };
+  $('#cf').onsubmit=async e=>{ e.preventDefault(); const nm=$('#cn').value.trim(); const er=$('#cerr');
+    if(!nm){ er.textContent='Give your crew a name.'; er.hidden=false; return; }
+    const {data,error}=await sb.rpc('create_crew',{crew_name:nm}); if(error){ er.textContent=dbError(error); er.hidden=false; return; }
+    toast('Crew started. Your join code is '+data.join_code); prefs.crewId=data.id; savePrefs(); await afterSignIn(); };
+}
+async function afterSignIn(user){
+  try{
+    if(!user){ const {data}=await sb.auth.getUser(); user=data.user; }
+    if(!user) return go({name:'auth',mode:'in'});
+    Me.id=user.id; Me.email=user.email||'';
+    go({name:'loading'});
+    let {data:prof}=await sb.from('profiles').select('display_name').eq('id',user.id).maybeSingle();
+    if(!prof){ const nm=(user.user_metadata&&user.user_metadata.display_name)||'Climber'; await sb.from('profiles').insert({id:user.id,display_name:nm}); prof={display_name:nm}; }
+    Me.name=prof.display_name;
+    const {data:mem,error}=await sb.from('crew_members').select('crew_id,crews(id,name,join_code,owner_id)').eq('user_id',user.id);
+    if(error) throw error;
+    Crew.list=(mem||[]).map(m=>m.crews).filter(Boolean);
+    if(!Crew.list.length) return go({name:'crew'});
+    const pick=Crew.list.find(c=>c.id===prefs.crewId)||Crew.list[0];
+    await openCrew(pick.id);
+  }catch(e){ go({name:'loading',msg:'Could not reach your crew\'s data. '+dbError(e),retry:true}); }
+}
+async function openCrew(id){
+  const c=Crew.list.find(x=>x.id===id); if(!c) return;
+  Object.assign(Crew,{id:c.id,name:c.name,code:c.join_code,ownerId:c.owner_id});
+  prefs.crewId=c.id; savePrefs(); pixCache.clear();
+  go({name:'loading',msg:'Loading '+c.name+'…'});
+  try{ await loadCrewData(); subscribe(); go({name:'walls'}); }
+  catch(e){ go({name:'loading',msg:'Could not load '+c.name+'. '+dbError(e),retry:true}); }
+}
+function newPasswordSheet(){
+  openSheet(`<h2>Set a new password</h2><label class="field"><span>New password</span><input class="input" id="np" type="password" autocomplete="new-password" placeholder="At least 6 characters"></label><div class="err" id="nperr" hidden></div><button class="btn primary" id="nps">Save password</button>`,s=>{
+    $('#nps',s).onclick=async()=>{ const pw=$('#np',s).value; if(pw.length<6){ $('#nperr',s).textContent='Passwords need at least 6 characters.'; $('#nperr',s).hidden=false; return; }
+      const {error}=await sb.auth.updateUser({password:pw}); if(error){ $('#nperr',s).textContent=dbError(error); $('#nperr',s).hidden=false; return; } closeSheet(); toast('Password updated'); };
+  });
+}
+
+/* ---------- import from the claude.ai version ---------- */
+async function importExport(file){
+  let d; try{ d=JSON.parse(await file.text()); }catch(e){ return toast('That file is not a Sprayboard export.'); }
+  if(!d||d.app!=='sprayboard'||!Array.isArray(d.walls)) return toast('That file is not a Sprayboard export.');
+  go({name:'loading',msg:'Importing your walls…'});
+  let nw=0,np=0,nt=0;
+  try{
+    for(const w of d.walls){
+      let photoPath=null;
+      if(w.photoData){ const blob=await (await fetch(w.photoData)).blob(); const img=await loadImg(w.photoData); photoPath=(await storePhoto(img,w.id)).photoPath; }
+      await put('walls',{id:w.id,name:w.name,angle:w.angle,aspect:w.aspect,holds:w.holds||[],photoPath,createdBy:Me.id,createdAt:w.createdAt||new Date().toISOString()}); nw++;
+    }
+    for(const p of d.problems||[]){ if(!d.walls.some(w=>w.id===p.wallId)) continue;
+      await put('problems',{id:p.id,wallId:p.wallId,name:p.name,grade:p.grade,feet:p.feet,noMatch:!!p.noMatch,notes:p.notes||'',holds:p.holds||{},setter:p.setter||Me.name,setterId:Me.id,fa:p.fa?{...p.fa,userId:Me.id,name:Me.name}:null,createdAt:p.createdAt||new Date().toISOString()}); np++; }
+    for(const t of d.ticks||[]){ if(!(d.problems||[]).some(p=>p.id===t.problemId)) continue;
+      await put('ticks',{id:t.id,problemId:t.problemId,wallId:t.wallId,userId:Me.id,day:t.day,at:t.at,sent:!!t.sent,attempts:t.attempts||1,grade:t.grade??null,stars:t.stars||0,note:t.note||'',fa:!!t.fa}); nt++; }
+    toast(`Imported ${nw} wall${nw===1?'':'s'}, ${np} problem${np===1?'':'s'} and ${nt} log${nt===1?'':'s'}.`);
+  }catch(e){ toast('Import stopped: '+dbError(e)); }
+  go({name:'walls'});
+}
+
+/* ---------- photo handling ---------- */
+const loadImg=src=>new Promise((res,rej)=>{ const i=new Image(); if(/^https?:/.test(src)) i.crossOrigin='anonymous'; i.onload=()=>res(i); i.onerror=()=>rej(new Error('That file could not be opened as a photo.')); i.src=src; });
+function jpeg(img,maxEdge,q){ const w=img.naturalWidth,h=img.naturalHeight,k=Math.min(1,maxEdge/Math.max(w,h)); const c=document.createElement('canvas'); c.width=Math.round(w*k); c.height=Math.round(h*k); c.getContext('2d').drawImage(img,0,0,c.width,c.height); return new Promise(r=>c.toBlob(r,'image/jpeg',q)); }
+const toDataURL=b=>new Promise(r=>{ const f=new FileReader(); f.onload=()=>r(f.result); f.readAsDataURL(b); });
+async function storePhoto(img,wallId){
+  const b=await jpeg(img,2000,.85);
+  const path=`${Crew.id}/${wallId}-${Date.now().toString(36)}.jpg`;
+  const {error}=await sb.storage.from('wall-photos').upload(path,b,{contentType:'image/jpeg',upsert:true});
+  if(error) throw error;
+  await signPhotos([{photoPath:path}]);
+  return {photoPath:path};
+}
+function addWallSheet(){
+  let img=null;
+  openSheet(`<h2>Add your wall</h2>
+  <label class="drop" id="drop"><input type="file" accept="image/*" id="wf"><span id="dl"><b>Choose a photo of your wall</b><br><span class="muted small">Shoot straight on from the middle, in even light, with the whole wall in frame.</span></span><img id="pv" alt="" hidden></label>
+  <label class="field"><span>Wall name</span><input class="input" id="wn" placeholder="e.g. Garage wall" maxlength="40"></label>
+  <label class="field"><span>Angle</span><select class="input" id="wa">${ANGLES.map(a=>`<option value="${a}" ${a===40?'selected':''}>${a}° overhang</option>`).join('')}</select></label>
+  <div class="err" id="we" hidden></div>
+  <div class="row"><button class="btn grow" id="wc">Cancel</button><button class="btn primary grow" id="ws">Add wall</button></div>`,s=>{
+    $('#wf',s).onchange=async e=>{ const f=e.target.files[0]; if(!f) return; try{ const u=URL.createObjectURL(f); img=await loadImg(u); $('#pv',s).src=u; $('#pv',s).hidden=false; $('#dl',s).hidden=true; $('#we',s).hidden=true; }catch(err){ $('#we',s).textContent=err.message; $('#we',s).hidden=false; } };
+    $('#wc',s).onclick=closeSheet;
+    $('#ws',s).onclick=async()=>{
+      const name=$('#wn',s).value.trim()||'Home wall';
+      if(!img){ $('#we',s).textContent='Choose a photo of your wall first.'; $('#we',s).hidden=false; return; }
+      const btn=$('#ws',s); btn.disabled=true; btn.textContent='Saving photo…';
+      try{
+        const wid=uid('w'); const ph=await storePhoto(img,wid);
+        const w={id:wid,createdBy:Me.id,name,angle:+$('#wa',s).value,aspect:img.naturalHeight/img.naturalWidth,holds:[],createdAt:new Date().toISOString(),...ph};
+        await put('walls',w); closeSheet(); go({name:'map',wallId:w.id,first:true});
+      }catch(e){ btn.disabled=false; btn.textContent='Add wall'; $('#we',s).textContent='The wall could not be saved. '+dbError(e); $('#we',s).hidden=false; }
+    };
+  });
+}
+
+/* ---------- views: wall ---------- */
+function vWall(){
+  const w=get('walls',view.wallId); if(!w) return go({name:'walls'});
+  const f=getF(w.id);
+  app.innerHTML=topbar(w.name,backBtn({name:'walls'}),`<button class="iconbtn" id="st" aria-label="Stats">${I.chart}</button><button class="iconbtn" id="ed" aria-label="Edit wall and holds">${I.edit}</button>`)+
+  `<div class="muted small" style="margin-top:-4px">${w.angle}° · ${w.holds.length} holds · ${problemsOn(w.id).length} problems</div>`+
+  (w.demo?`<div class="banner" style="margin-top:12px">This is an example wall so you can try things out. Changes here aren't saved.</div>`:'')+
+  (!w.holds.length?`<div class="banner" style="margin-top:12px">No holds marked yet. Tap the pencil to mark them, or just start setting and tap holds as you go.</div>`:'')+
+  `<div class="section">
+    <input class="search" id="q" type="search" placeholder="Search problems or setters" value="${esc(f.q)}" aria-label="Search">
+    <div class="filters">
+      <select class="sel" id="gmin" aria-label="Lowest grade">${FONT.map((_,i)=>`<option value="${i}" ${i===f.gmin?'selected':''}>${gradeLabel(i)}</option>`).join('')}</select>
+      <span class="muted">to</span>
+      <select class="sel" id="gmax" aria-label="Highest grade">${FONT.map((_,i)=>`<option value="${i}" ${i===f.gmax?'selected':''}>${gradeLabel(i)}</option>`).join('')}</select>
+      <div class="seg" id="stat">${[['all','All'],['todo','To do'],['sent','Sent'],['proj','Projects']].map(([k,l])=>`<button data-s="${k}" aria-pressed="${f.status===k}">${l}</button>`).join('')}</div>
+      <select class="sel" id="sort" aria-label="Sort">${[['new','Newest'],['easy','Easiest'],['hard','Hardest'],['popular','Most sent'],['name','A to Z']].map(([k,l])=>`<option value="${k}" ${f.sort===k?'selected':''}>${l}</option>`).join('')}</select>
+    </div>
+  </div>
+  <div class="section"><div class="label" id="pcount"></div><div id="plist"></div></div>`+
+  bar(`<button class="btn primary grow" id="new">${I.plus} Set a problem</button>`);
+  const upd=()=>renderList(w);
+  $('#q').oninput=e=>{f.q=e.target.value;upd()};
+  $('#gmin').onchange=e=>{f.gmin=+e.target.value;if(f.gmax<f.gmin){f.gmax=f.gmin;$('#gmax').value=f.gmax}upd()};
+  $('#gmax').onchange=e=>{f.gmax=+e.target.value;if(f.gmin>f.gmax){f.gmin=f.gmax;$('#gmin').value=f.gmin}upd()};
+  $('#sort').onchange=e=>{f.sort=e.target.value;upd()};
+  $('#stat').onclick=e=>{const b=e.target.closest('[data-s]');if(!b)return;f.status=b.dataset.s;$('#stat').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));upd()};
+  $('#new').onclick=()=>go({name:'set',wallId:w.id});
+  $('#ed').onclick=()=>go({name:'map',wallId:w.id});
+  $('#st').onclick=()=>go({name:'stats',wallId:w.id});
+  upd();
+}
+function renderList(w){
+  const list=filtered(w.id), total=problemsOn(w.id).length;
+  $('#pcount').textContent=list.length===total?`${total} problem${total===1?'':'s'}`:`${list.length} of ${total} problems`;
+  $('#plist').innerHTML=list.length?`<div class="plist">${list.map(({p,s})=>`<button class="pitem" data-p="${esc(p.id)}">${chip(p.grade)}<div style="min-width:0"><div class="nm">${esc(p.name)}</div><div class="meta">${esc(p.setter||'Unknown setter')} · ${esc(p.feet)}${p.noMatch?' · No match':''}${s.stars?` · ${'★'.repeat(Math.round(s.stars))}`:''}</div></div><div class="status ${s.sent?'sent':''}">${s.sent?(s.flash?'Flashed':'Sent'):(s.attempts?`${s.attempts} ${s.attempts===1?'try':'tries'}`:'')}${s.sends?`<div class="muted" style="font-weight:500">${s.sends} ${s.sends===1?'ascent':'ascents'}</div>`:''}</div></button>`).join('')}</div>`
+    :`<div class="plist"><div class="empty">${total?'No problems match these filters.':'No problems yet. Tap Set a problem to make the first one.'}</div></div>`;
+  $('#plist').querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>go({name:'problem',id:b.dataset.p,zoom:{s:1,tx:0,ty:0}}));
+}
+
+/* ---------- views: problem ---------- */
+function vProblem(){
+  const p=get('problems',view.id); if(!p) return go(view.wallId?{name:'wall',wallId:view.wallId}:{name:'walls'});
+  const w=get('walls',p.wallId); if(!w) return go({name:'walls'});
+  const ts=ticksByProblem()[p.id]||[], s=summary(ts);
+  const list=filtered(w.id).map(x=>x.p.id), idx=list.indexOf(p.id);
+  const prevId=idx>0?list[idx-1]:null, nextId=idx>=0&&idx<list.length-1?list[idx+1]:null;
+  view.zoom=view.zoom||{s:1,tx:0,ty:0};
+  app.innerHTML=topbar(p.name,backBtn({name:'wall',wallId:w.id}),`<button class="iconbtn" id="ed" aria-label="Edit problem">${I.edit}</button>`)+
+  `<div id="stage"></div>
+  <div class="phead">${chip(p.grade,true)}<div class="stack" style="gap:2px;min-width:0"><div style="font-weight:600;font-size:17px">${esc(p.feet)}${p.noMatch?' · No match':''}</div><div class="muted small">Set by ${esc(p.setter||'unknown')} · ${fmtDay((p.createdAt||'').slice(0,10))}</div>${p.grade<0?`<div class="small" style="font-weight:600">Project · ungraded until the first send</div>`:p.fa?`<div class="small" style="font-weight:600">FA by ${esc(p.fa.userId===Me.id?'you':(p.fa.name||nameOf(p.fa.userId)))} · ${fmtDay(p.fa.day)}</div>`:''}</div></div>
+  <div class="facts" style="margin-top:10px">${s.crowd!=null?`<span>Logged grade <b>${gradeLabel(s.crowd)}</b></span>`:''}<span>Ascents <b>${s.sends}</b></span><span>Your attempts <b>${s.attempts}</b></span>${s.sent?`<span style="color:var(--ok);font-weight:600">${s.flash?'You flashed it':'You sent it'}</span>`:''}${s.stars?`<span>Quality <b style="color:#e0a21a">${'★'.repeat(Math.round(s.stars))}</b></span>`:''}</div>
+  ${p.notes?`<div class="note" style="margin-top:12px">${esc(p.notes)}</div>`:''}
+  <div style="margin-top:12px">${legend()}</div>
+  <div class="section"><h3>Logbook</h3>${ts.length?`<div class="log">${ts.map(t=>`<div class="li"><div><div style="font-weight:600">${t.demo?'':esc(nameOf(t.userId))+' · '}${t.sent?(t.fa?'First ascent':t.attempts===1?'Flash':'Send'):'Attempts'} · ${fmtDay(t.day)}</div><div class="muted small">${t.attempts} ${t.attempts===1?'go':'goes'}${t.sent&&t.grade!=null?` · felt ${gradeLabel(t.grade)}`:''}${t.stars?` · ${'★'.repeat(t.stars)}`:''}${t.note?` · ${esc(t.note)}`:''}</div></div>${isMine(t)?`<button class="x" data-dt="${esc(t.id)}" aria-label="Delete this log">${I.x}</button>`:'<span></span>'}</div>`).join('')}</div>`:`<p class="muted" style="margin:0">Nothing logged yet.</p>`}</div>`+
+  bar(`<button class="btn" id="pv" ${prevId?'':'disabled'} aria-label="Previous problem">${I.prev}</button><button class="btn grow" id="att">+1 attempt</button><button class="btn primary grow" id="snd">Log send</button><button class="btn" id="nx" ${nextId?'':'disabled'} aria-label="Next problem">${I.next}</button>`);
+  mountStage($('#stage'),w,{zoom:view.zoom,maxH:.58,holds:()=>w.holds,draw:()=>overlay(w,w.holds,p.holds,{shade:.62})});
+  $('#ed').onclick=()=>go({name:'set',wallId:w.id,problemId:p.id});
+  if(prevId) $('#pv').onclick=()=>go({name:'problem',id:prevId,zoom:{s:1,tx:0,ty:0}});
+  if(nextId) $('#nx').onclick=()=>go({name:'problem',id:nextId,zoom:{s:1,tx:0,ty:0}});
+  const open=()=>ts.find(t=>t.day===today()&&!t.sent&&isMine(t));
+  $('#att').onclick=async()=>{ const t=open(); const n=t?{...t,attempts:t.attempts+1,at:new Date().toISOString()}:{id:uid('t'),problemId:p.id,wallId:w.id,userId:Me.id,day:today(),at:new Date().toISOString(),sent:false,attempts:1,grade:null,stars:0,note:'',...(p.demo?{demo:true}:{})}; await put('ticks',n); toast(`Attempt ${n.attempts} logged for today`); };
+  $('#snd').onclick=()=>sendSheet(p,w,open());
+  app.querySelectorAll('[data-dt]').forEach(b=>b.onclick=async()=>{ if(await confirmSheet('Delete this log?','It will be removed from your logbook and stats.','Delete',true)) del('ticks',b.dataset.dt); });
+}
+function sendSheet(p,w,openTick){
+  let att=openTick?openTick.attempts+1:1, stars=0;
+  const proj=p.grade<0;
+  openSheet(`<h2>${proj?'Log the first ascent':'Log a send'}</h2><div class="muted" style="margin-top:-8px">${esc(p.name)} · ${proj?'Project':gradeLabel(p.grade)}</div>
+  <div class="two"><label class="field"><span>Date</span><input class="input" type="date" id="ld" value="${today()}"></label>
+  <div class="field"><span>Attempts incl. send</span><div class="stepper"><button type="button" id="am" aria-label="Fewer">−</button><output id="ao">${att}</output><button type="button" id="ap" aria-label="More">+</button></div></div></div>
+  ${proj?`<label class="field"><span>Grade it</span><select class="input" id="lg"><option value="" selected disabled>Choose a grade</option>${gradeOptions(null)}</select><span class="muted small" style="font-weight:400">This becomes the problem's grade.</span></label>`
+  :`<label class="field"><span>How hard did it feel?</span><select class="input" id="lg">${gradeOptions(p.grade)}</select></label>`}
+  <div class="field"><span>Quality</span><div class="stars" id="ls">${[1,2,3].map(n=>`<button type="button" data-n="${n}" aria-label="${n} star">★</button>`).join('')}</div></div>
+  <label class="field"><span>Note</span><input class="input" id="ln" placeholder="Beta, conditions, how it felt" maxlength="200"></label>
+  <div class="err" id="lerr" hidden></div>
+  <div class="row"><button class="btn grow" id="lc">Cancel</button><button class="btn primary grow" id="lsv">${proj?'Save and grade':'Save send'}</button></div>`,s=>{
+    const ao=$('#ao',s); $('#am',s).onclick=()=>{att=Math.max(1,att-1);ao.textContent=att}; $('#ap',s).onclick=()=>{att++;ao.textContent=att};
+    $('#ls',s).onclick=e=>{const b=e.target.closest('[data-n]');if(!b)return;const n=+b.dataset.n;stars=stars===n?0:n;s.querySelectorAll('#ls button').forEach(x=>x.classList.toggle('on',+x.dataset.n<=stars))};
+    $('#lc',s).onclick=closeSheet;
+    $('#lsv',s).onclick=async()=>{
+      const gv=$('#lg',s).value; if(gv===''){ $('#lerr',s).textContent='Choose a grade for the first ascent.'; $('#lerr',s).hidden=false; return; }
+      const g=+gv, day=$('#ld',s).value||today(); const base=openTick&&day===openTick.day?openTick:{id:uid('t')};
+      const t={...base,problemId:p.id,wallId:w.id,userId:Me.id,day,at:new Date().toISOString(),sent:true,attempts:att,grade:g,stars,note:$('#ln',s).value.trim(),...(proj?{fa:true}:{}),...(p.demo?{demo:true}:{})};
+      closeSheet(); await put('ticks',t);
+      if(proj){ await put('problems',{...get('problems',p.id),grade:g,fa:{day,tickId:t.id,userId:Me.id,name:Me.name}}); toast(`First ascent logged. Graded ${gradeLabel(g)}.`); }
+      else toast(att===1?'Flash logged. Nice.':'Send logged.');
+    };
+  });
+}
+
+/* ---------- views: set / edit problem ---------- */
+function vSet(){
+  const w=get('walls',view.wallId); if(!w) return go({name:'walls'});
+  const ex=view.problemId?get('problems',view.problemId):null;
+  if(!view.draft){ view.draft={holds:JSON.parse(JSON.stringify(w.holds)),roles:{...(ex?ex.holds:{})},name:ex?ex.name:'',grade:ex?ex.grade:3,feet:ex?ex.feet:'Marked feet only',noMatch:ex?!!ex.noMatch:false,tags:ex?[...(ex.tags||[])]:[],notes:ex?ex.notes||'':'',setter:ex?ex.setter:Me.name,brush:'start',addedHolds:false}; view.zoom={s:1,tx:0,ty:0}; }
+  const d=view.draft;
+  app.innerHTML=topbar(ex?'Edit problem':'New problem',backBtn(ex?{name:'problem',id:ex.id}:{name:'wall',wallId:w.id}))+
+  `<div class="brushes" id="br">${Object.entries(ROLE).map(([k,r])=>`<button class="brush" data-b="${k}" style="--c:${r.c}" aria-pressed="${d.brush===k}"><span><i></i>${r.label}</span><small data-c="${k}">0</small></button>`).join('')}</div>
+  <p class="muted small" style="margin:0 0 10px">Pick a colour, then tap a hold to trace and paint it. If an outline comes out wrong, tap it again with the same colour to remove it, then tap a different spot on the hold. Pinch to zoom.</p>
+  ${tapModeRow(true)}
+  <div id="stage"></div>
+  <div class="section">
+    <label class="field"><span>Name</span><input class="input" id="pn" value="${esc(d.name)}" maxlength="60" placeholder="Give it a name"></label>
+    <div class="two"><label class="field"><span>Grade</span><select class="input" id="pg">${gradeOptions(d.grade,true)}</select></label>
+    <label class="field"><span>Feet</span><select class="input" id="pf">${FEET.map(f=>`<option ${f===d.feet?'selected':''}>${f}</option>`).join('')}</select></label></div>
+    <div class="field"><span>Hands</span><div class="seg" id="pm"><button type="button" data-m="0" aria-pressed="${!d.noMatch}">Matching allowed</button><button type="button" data-m="1" aria-pressed="${d.noMatch}">No match</button></div></div>
+    <label class="field"><span>Setter</span><input class="input" id="pse" value="${esc(d.setter)}" maxlength="40" placeholder="Your name"></label>
+    <label class="field"><span>Notes or beta</span><textarea class="input" id="pno" maxlength="500" placeholder="Optional">${esc(d.notes)}</textarea></label>
+    <div class="err" id="perr" hidden></div>
+    ${ex?`<button class="btn danger" id="pdel">Delete problem</button>`:''}
+  </div>`+
+  bar(`<button class="btn primary grow" id="psave">${ex?'Save changes':'Save problem'}</button>`);
+  const counts=()=>{ const c={start:0,hand:0,foot:0,finish:0}; Object.values(d.roles).forEach(r=>c[r]++); app.querySelectorAll('[data-c]').forEach(el=>el.textContent=c[el.dataset.c]); return c; };
+  d.newIds=d.newIds||[];
+  const dropHold=id=>{ delete d.roles[id]; if(d.newIds.includes(id)){ d.holds=d.holds.filter(x=>x.id!==id); d.newIds=d.newIds.filter(x=>x!==id); } };
+  // only holds painted in this problem can be tapped; everywhere else a tap traces fresh from that spot
+  const st=mountStage($('#stage'),{...w,holds:d.holds},{zoom:view.zoom,maxH:.64,holds:()=>d.holds.filter(x=>d.roles[x.id]),draw:()=>overlay(w,d.holds,d.roles,{shade:.28}),
+    onTap:async(p,h)=>{ view.dirty=true;
+      d.lastCircle=null;
+      if(h){ if(d.roles[h.id]===d.brush) dropHold(h.id); else d.roles[h.id]=d.brush; counts(); st.redraw(); return; }
+      else if(prefs.tapTrace!==false){ try{ const r=await traceAt(w,p); if(r.err){ toast(r.err); return; } const nh={id:uid('h'),...r}; d.holds.push(nh); d.newIds.push(nh.id); d.roles[nh.id]=d.brush; d.addedHolds=true; }catch(e){ toast('The photo could not be read. Switch to Places circle.'); return; } }
+      else { const nh={id:uid('h'),x:Math.round(p.x),y:Math.round(p.y),r:prefs.mapR}; d.holds.push(nh); d.newIds.push(nh.id); d.lastCircle=nh.id; d.roles[nh.id]=d.brush; d.addedHolds=true; }
+      counts(); st.redraw(); }});
+  counts(); bindTapModeRow(r=>{ const c=d.holds.find(x=>x.id===d.lastCircle); if(c&&!isBox(c)){ c.r=r; st.redraw(); } }); wallPixels(w).catch(()=>{});
+  $('#br').onclick=e=>{const b=e.target.closest('[data-b]');if(!b)return;d.brush=b.dataset.b;app.querySelectorAll('[data-b]').forEach(x=>x.setAttribute('aria-pressed',x===b))};
+  const bind=(id,k,num)=>{$(id).oninput=e=>{d[k]=num?+e.target.value:e.target.value;view.dirty=true}};
+  bind('#pn','name'); bind('#pg','grade',true); bind('#pse','setter'); bind('#pno','notes'); $('#pf').onchange=e=>{d.feet=e.target.value;view.dirty=true};
+  $('#pm').onclick=e=>{const b=e.target.closest('[data-m]');if(!b)return;d.noMatch=b.dataset.m==='1';$('#pm').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));view.dirty=true};
+  if(ex) $('#pdel').onclick=async()=>{ if(!await confirmSheet('Delete this problem?','It and everyone\'s logged attempts and sends on it will be removed.','Delete problem',true)) return; if(ex.demo){ for(const t of Object.values(all('ticks')).filter(t=>t.problemId===ex.id)) await del('ticks',t.id); } if(!await del('problems',ex.id)) return; view.dirty=false; go({name:'wall',wallId:w.id}); };
+  $('#psave').onclick=async()=>{
+    const c=counts(), miss=[]; if(!d.name.trim()) miss.push('a name'); if(!c.start) miss.push('at least one start hold'); if(!c.finish) miss.push('a finish hold');
+    const err=$('#perr'); if(miss.length){ err.textContent='Add '+miss.join(', ')+' before saving.'; err.hidden=false; err.scrollIntoView({block:'center',behavior:'smooth'}); return; }
+    const btn=$('#psave'); btn.disabled=true;
+    try{
+      if(d.addedHolds) await put('walls',{...get('walls',w.id),holds:d.holds});
+      const p={...(ex||{}),id:ex?ex.id:uid('p'),wallId:w.id,name:d.name.trim(),grade:d.grade,feet:d.feet,noMatch:d.noMatch,tags:d.tags,notes:d.notes.trim(),setter:d.setter.trim(),setterId:ex?ex.setterId:Me.id,holds:d.roles,createdAt:ex?ex.createdAt:new Date().toISOString(),...(w.demo?{demo:true}:{})};
+      await put('problems',p); view.dirty=false; toast(ex?'Problem updated':'Problem saved'); go({name:'problem',id:p.id,zoom:{s:1,tx:0,ty:0}});
+    }catch(e){ btn.disabled=false; }
+  };
+}
+
+/* ---------- views: map holds / wall details ---------- */
+function vMap(){
+  const w=get('walls',view.wallId); if(!w) return go({name:'walls'});
+  if(!view.draft){ view.draft={holds:JSON.parse(JSON.stringify(w.holds)),sel:null,undo:[],name:w.name,angle:w.angle,sens:6,split:true,board:null,picking:false,P:null,chalkMode:1,chalk:null}; view.zoom={s:1,tx:0,ty:0}; }
+  const d=view.draft, snap=()=>{ d.undo.push(JSON.stringify(d.holds)); if(d.undo.length>60) d.undo.shift(); view.dirty=true; };
+  const usedIn=id=>problemsOn(w.id).filter(p=>p.holds&&p.holds[id]).length;
+  app.innerHTML=topbar('Edit wall',backBtn({name:'wall',wallId:w.id}))+
+  (view.first?`<div class="banner" style="margin-bottom:10px">Tap Detect holds below to outline every hold automatically, then tidy up any mistakes. You can also tap holds on the photo to mark them yourself.</div>`:'')+
+  `<p class="muted small" style="margin:0 0 10px">Tap the middle of a hold to trace its outline. Tap an outline to select it, then drag to move it or use the slider to resize it.</p>
+  ${tapModeRow()}
+  <div id="stage"></div>
+  <div class="section"><h3>Auto-detect holds</h3>
+    <p class="muted small" style="margin:0">Outlines everything on the photo that isn't the bare board colour. Touching holds are split wherever the colour changes. White patches surrounded by board count as white holds; white patches touching a coloured hold count as chalk on that hold and join its outline. Check the result and delete any outlines on bolts, stickers or the frame.</p>
+    <div class="row"><span id="bsw" style="width:28px;height:28px;border-radius:7px;border:1px solid var(--line);background:var(--surface-2);flex:none"></span><span class="small grow" id="bst">Board colour: found automatically</span><button class="btn" id="pick">Pick board colour</button></div>
+    <label class="field"><span>Sensitivity: <b id="sv"></b></span><input type="range" class="range" id="sens" min="1" max="10" value="${d.sens}"></label>
+    <label class="row small"><input type="checkbox" id="split" ${d.split?'checked':''}> Split touching holds at colour boundaries</label>
+    <div class="field"><span>Chalk filter</span><div class="seg" id="chm">${['Off','Normal','Strong'].map((l,i)=>`<button data-c="${i}" aria-pressed="${d.chalkMode===i}">${l}</button>`).join('')}</div></div>
+    <div class="row"><span id="csw" style="width:28px;height:28px;border-radius:7px;border:1px solid var(--line);background:var(--surface-2);flex:none"></span><span class="small grow" id="cst">Chalk colour: not set (optional)</span><button class="btn" id="pickc">Pick a chalk mark</button></div>
+    <div class="row"><button class="btn primary grow" id="det">Detect holds</button><button class="btn danger" id="clr">Clear all</button></div>
+    <div class="small" id="dres" aria-live="polite"></div>
+  </div>
+  <div class="section">
+    <div class="row"><span class="label grow" id="hc"></span><button class="btn" id="un">Undo</button><button class="btn danger" id="hd" disabled>Delete hold</button></div>
+    <label class="field"><span id="rl">Size for new holds</span><input type="range" class="range" id="hr" min="6" max="220" value="${prefs.mapR}"></label>
+    <div class="muted small" id="hu"></div>
+  </div>
+  <div class="section"><h3>Wall details</h3>
+    <label class="field"><span>Name</span><input class="input" id="wn" value="${esc(d.name)}" maxlength="40"></label>
+    <label class="field"><span>Angle</span><select class="input" id="wa">${ANGLES.map(a=>`<option value="${a}" ${a===d.angle?'selected':''}>${a}° overhang</option>`).join('')}</select></label>
+    <button class="btn danger" id="wd">Delete wall</button>
+  </div>`+
+  bar(`<button class="btn primary grow" id="ms">Save wall</button>`);
+  const selH=()=>d.holds.find(h=>h.id===d.sel);
+  const ui=()=>{ const h=selH(); $('#hc').textContent=`${d.holds.length} holds marked`; $('#hd').disabled=!h; $('#un').disabled=!d.undo.length; $('#clr').disabled=!d.holds.length; $('#rl').textContent=h?'Selected hold size':'Size for new holds'; $('#hr').value=h?hsize(h):prefs.mapR; const u=h?usedIn(h.id):0; $('#hu').textContent=h&&u?`This hold is used in ${u} problem${u===1?'':'s'}.`:''; };
+  const sensLabel=()=>{ $('#sv').textContent=['','Lowest','Very low','Low','Medium-low','Medium','Medium','Medium-high','High','Very high','Highest'][d.sens]; };
+  const showBoard=()=>{ if(d.board){ $('#bsw').style.background=`rgb(${d.board.rgb.join(',')})`; $('#bst').textContent=d.board.picked?'Board colour: picked by you':'Board colour: found automatically'; } };
+  const pixels=async()=>{ if(!d.P){ $('#dres').textContent='Reading the photo…'; await new Promise(r=>setTimeout(r,30)); d.P=await wallPixels(w); if(!d.board) d.board=d.P.board; showBoard(); } return d.P; };
+  const runDetect=async()=>{
+    const btn=$('#det'); btn.disabled=true; btn.textContent='Detecting…';
+    try{
+      const P=await pixels(); await new Promise(r=>setTimeout(r,30));
+      const res=detectHolds(P,d.board,40-d.sens*3,d.split,d.chalkMode,d.chalk), found=res.holds;
+      snap();
+      const fresh=found.filter(b=>!d.holds.some(h=>holdDist(h,b)<=0||holdDist(b,h)<=0));
+      fresh.forEach(b=>d.holds.push({id:uid('h'),...b}));
+      d.sel=null; st.redraw(); ui();
+      const ch=res.chalk?` Ignored ${res.chalk} chalk mark${res.chalk===1?'':'s'}.`:'';
+      const mg=res.merged?` Merged ${res.merged} chalk or glare patch${res.merged===1?'':'es'} into the holds they sit on.`:''; 
+      $('#dres').textContent=fresh.length?`Found ${found.length} holds, added ${fresh.length}${found.length>fresh.length?` (${found.length-fresh.length} were already marked)`:''}.${ch}${mg} Tap an outline to select it, then drag, resize or delete it.`:`Found ${found.length} holds, all already marked.${ch} Try a higher sensitivity or pick the board colour.`;
+    }catch(e){ $('#dres').textContent='The photo could not be read for detection. Mark holds by tapping instead.'; }
+    btn.disabled=false; btn.textContent='Detect holds';
+  };
+  const st=mountStage($('#stage'),w,{zoom:view.zoom,maxH:.64,holds:()=>d.holds,draw:()=>overlay(w,d.holds,{}, {mapMode:true,selected:d.sel}),
+    draggable:h=>h.id===d.sel, onDragStart:()=>snap(), onDragEnd:()=>ui(),
+    onTap:async(p,h)=>{
+      if(d.picking){ const what=d.picking; d.picking=false; $('#pick').textContent='Pick board colour'; $('#pickc').textContent='Pick a chalk mark'; const P=await pixels(); const s=P.w/VW; const smp=sampleBoard(P,Math.round(p.x*s),Math.round(p.y*s),3);
+        if(what==='board'){ d.board={...smp,picked:true}; showBoard(); $('#dres').textContent='Board colour set. Tap Detect holds.'; }
+        else { d.chalk=smp; showChalk(); $('#dres').textContent='Chalk colour set. Detection will treat marks this colour, or darker, as bare board. Brighter white holds are kept.'; }
+        return; }
+      if(h){ d.sel=d.sel===h.id?null:h.id; st.redraw(); ui(); return; }
+      if(prefs.tapTrace!==false){
+        $('#dres').textContent='Tracing…';
+        try{ const r=await traceAt(w,p,d.board); if(r.err){ $('#dres').textContent=r.err; toast(r.err); return; } snap(); const nh={id:uid('h'),...r}; d.holds.push(nh); d.sel=nh.id; $('#dres').textContent='Hold traced. It is selected, so you can resize or delete it if the outline is off.'; }
+        catch(e){ $('#dres').textContent='The photo could not be read. Switch to Places circle to mark holds by hand.'; return; }
+      } else { snap(); d.holds.push({id:uid('h'),x:Math.round(p.x),y:Math.round(p.y),r:prefs.mapR}); d.sel=null; }
+      st.redraw(); ui(); }});
+  bindTapModeRow();
+  sensLabel(); showBoard(); wallPixels(w).catch(()=>{});
+  $('#sens').oninput=e=>{ d.sens=+e.target.value; sensLabel(); };
+  $('#split').onchange=e=>{ d.split=e.target.checked; };
+  $('#det').onclick=runDetect;
+  const startPick=what=>{ d.picking=d.picking===what?false:what; $('#pick').textContent=d.picking==='board'?'Cancel':'Pick board colour'; $('#pickc').textContent=d.picking==='chalk'?'Cancel':'Pick a chalk mark'; $('#dres').textContent=d.picking==='board'?'Tap a patch of bare board on the photo.':d.picking==='chalk'?'Zoom in and tap the middle of a chalk smear on the board (not on a hold).':''; };
+  $('#pick').onclick=()=>startPick('board'); $('#pickc').onclick=()=>startPick('chalk');
+  $('#chm').onclick=e=>{ const b=e.target.closest('[data-c]'); if(!b) return; d.chalkMode=+b.dataset.c; $('#chm').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b)); };
+  function showChalk(){ if(d.chalk){ $('#csw').style.background=`rgb(${d.chalk.rgb.join(',')})`; $('#cst').textContent='Chalk colour: picked by you'; } }
+  showChalk();
+  $('#clr').onclick=async()=>{ const u=problemsOn(w.id).length; if(!await confirmSheet('Clear all holds?',u?`Your ${u} problem${u===1?'':'s'} will lose their holds until you save new ones. You can undo this before saving.`:'You can undo this before saving.','Clear all',true)) return; snap(); d.holds=[]; d.sel=null; st.redraw(); ui(); };
+  $('#hr').oninput=e=>{ const v=+e.target.value, h=selH(); if(h){ if(!view._rs){snap();view._rs=true;} scaleHold(h,v/Math.max(1,hsize(h))); st.redraw(); } else { prefs.mapR=v; savePrefs(); } };
+  $('#hr').onchange=()=>{ view._rs=false; };
+  $('#hd').onclick=()=>{ const h=selH(); if(!h) return; snap(); d.holds=d.holds.filter(x=>x!==h); d.sel=null; st.redraw(); ui(); };
+  $('#un').onclick=()=>{ if(!d.undo.length) return; d.holds=JSON.parse(d.undo.pop()); d.sel=null; st.redraw(); ui(); };
+  $('#wn').oninput=e=>{d.name=e.target.value;view.dirty=true}; $('#wa').onchange=e=>{d.angle=+e.target.value;view.dirty=true};
+  $('#wd').onclick=async()=>{ const n=problemsOn(w.id).length; if(!await confirmSheet(`Delete ${w.name}?`,`This removes the wall photo, ${n} problem${n===1?'':'s'} and everyone's logs on them, for the whole crew. It can't be undone.`,'Delete wall',true)) return;
+    if(w.demo){ for(const t of Object.values(all('ticks')).filter(t=>t.wallId===w.id)) await del('ticks',t.id); for(const p of problemsOn(w.id)) await del('problems',p.id); }
+    const path=w.photoPath; if(!await del('walls',w.id)) return;
+    if(path) sb.storage.from('wall-photos').remove([path]).catch(()=>{});
+    view.dirty=false; go({name:'walls'}); };
+  $('#ms').onclick=async()=>{ const btn=$('#ms'); btn.disabled=true; try{ await put('walls',{...get('walls',w.id),holds:d.holds,name:d.name.trim()||w.name,angle:d.angle}); view.dirty=false; toast('Wall saved'); go({name:'wall',wallId:w.id}); }catch(e){ btn.disabled=false; } };
+  ui();
+}
+
+/* ---------- views: stats ---------- */
+function vStats(){
+  const w=get('walls',view.wallId); if(!w) return go({name:'walls'});
+  const tb=ticksByProblem(), ps=problemsOn(w.id), sums=ps.map(p=>({p,s:summary(tb[p.id])}));
+  const sent=sums.filter(x=>x.s.sent), flashes=sent.filter(x=>x.s.flash).length;
+  const attempts=sums.reduce((a,x)=>a+x.s.attempts,0);
+  const hardest=sent.reduce((m,x)=>x.p.grade>(m??-1)?x.p.grade:m,null); const openProj=ps.filter(p=>p.grade<0).length;
+  const byV={}; sent.forEach(x=>{ if(x.p.grade<0) return; const v=VMAP[x.p.grade]; byV[v]=(byV[v]||0)+1; });
+  const setByV={}; ps.forEach(p=>{ if(p.grade<0) return; const v=VMAP[p.grade]; setByV[v]=(setByV[v]||0)+1; });
+  const vs=Object.keys(setByV).map(Number).sort((a,b)=>a-b), max=Math.max(1,...vs.map(v=>setByV[v]));
+  const recent=Object.values(all('ticks')).filter(t=>t.wallId===w.id&&isMine(t)).sort((a,b)=>(b.at||'').localeCompare(a.at||'')).slice(0,12);
+  const gl=v=>prefs.grades==='font'?FONT[VMAP.indexOf(v)]:'V'+v;
+  const crewRows=Object.entries(Crew.members).map(([id,n])=>{ const ss=ps.map(p=>({p,s:summary(tb[p.id],id)})).filter(x=>x.s.sent); return {id,n,sent:ss.length,hard:ss.reduce((m,x)=>x.p.grade>(m??-1)?x.p.grade:m,null)}; }).filter(r=>r.sent).sort((a,b)=>(b.hard??-1)-(a.hard??-1)||b.sent-a.sent);
+  app.innerHTML=topbar('Your stats',backBtn({name:'wall',wallId:w.id}))+`<div class="muted small" style="margin-top:-4px">${esc(w.name)}</div>
+  <div class="section tiles">
+    <div class="tile"><div class="label">Problems sent</div><div class="v">${sent.length}<span class="muted" style="font-size:20px"> / ${ps.length}</span></div></div>
+    <div class="tile"><div class="label">Hardest send</div><div class="v">${hardest==null?'–':gradeLabel(hardest)}</div></div>
+    <div class="tile"><div class="label">Flashes</div><div class="v">${flashes}</div></div>
+    <div class="tile"><div class="label">Attempts logged</div><div class="v">${attempts}</div></div>
+  </div>
+  <div class="section"><h3>Sent vs set, by grade</h3>${vs.length?`<div class="bars">${vs.map(v=>`<div class="barrow"><span class="g">${gl(v)}</span><div class="track" style="position:relative"><div class="fill" style="width:${setByV[v]/max*100}%;opacity:.28;position:absolute;inset:0 auto 0 0"></div><div class="fill" style="width:${(byV[v]||0)/max*100}%;position:relative"></div></div><span class="n">${byV[v]||0}/${setByV[v]}</span></div>`).join('')}</div><div class="muted small">Solid bar is problems you've sent. Faint bar is everything set at that grade.${openProj?` ${openProj} open project${openProj===1?'':'s'} not counted until sent.`:''}</div>`:`<p class="muted" style="margin:0">Set some problems to see your grade spread.</p>`}</div>
+  ${crewRows.length&&!w.demo?`<div class="section"><h3>Crew</h3><div class="log">${crewRows.map(r=>`<div class="li"><div><div style="font-weight:600">${esc(r.id===Me.id?r.n+' (you)':r.n)}</div><div class="muted small">${r.sent} problem${r.sent===1?'':'s'} sent</div></div><span class="chip" style="--g:${gradeColor(r.hard??0)}">${r.hard==null?'–':gradeLabel(r.hard)}</span></div>`).join('')}</div><div class="muted small">Hardest send on this wall.</div></div>`:''}
+  <div class="section"><h3>Your recent activity</h3>${recent.length?`<div class="log">${recent.map(t=>{ const p=get('problems',t.problemId); return `<div class="li"><div><div style="font-weight:600">${esc(p?p.name:'Deleted problem')} ${p?`<span class="muted">· ${gradeLabel(p.grade)}</span>`:''}</div><div class="muted small">${fmtDay(t.day)} · ${t.sent?(t.attempts===1?'Flash':'Sent'):'Attempts'} · ${t.attempts} ${t.attempts===1?'go':'goes'}</div></div></div>`; }).join('')}</div>`:`<p class="muted" style="margin:0">No attempts or sends logged yet.</p>`}</div>`;
+}
+
+/* ---------- boot ---------- */
+async function boot(){
+  go({name:'loading'});
+  try{
+    const {data}=await sb.auth.getSession();
+    if(!data.session) return go({name:'auth',mode:'up'});
+    await afterSignIn(data.session.user);
+  }catch(e){ go({name:'loading',msg:'Could not connect. '+dbError(e),retry:true}); }
+}
+sb.auth.onAuthStateChange((ev)=>{
+  if(ev==='SIGNED_OUT'){ if(Store.channel){ sb.removeChannel(Store.channel); Store.channel=null; } COLS.forEach(c=>Store.data[c]={}); Me.id=null; Crew.id=null; go({name:'auth',mode:'in'}); }
+  if(ev==='PASSWORD_RECOVERY') setTimeout(newPasswordSheet,300);
+});
+buildDemo(); boot();
+})();
+</script>
+<script>
+if('serviceWorker' in navigator && location.protocol==='https:' && !window.Capacitor){ window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{})); }
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "appId": "com.mitchcrossy.sprayboard",
+  "appName": "Sprayboard",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#eceef1"
+  }
+}
