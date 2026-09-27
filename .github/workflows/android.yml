@@ -1,0 +1,46 @@
+name: Android app
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: android-actions/setup-android@v3
+      - name: Install Capacitor
+        run: npm install
+      - name: Create the Android project
+        run: |
+          npx cap add android
+          sed -i 's#</manifest>#    <uses-permission android:name="android.permission.CAMERA" />\n</manifest>#' android/app/src/main/AndroidManifest.xml
+          npx @capacitor/assets generate --android --iconBackgroundColor '#a8632c' --splashBackgroundColor '#eceef1'
+          npx cap sync android
+      - name: Build the APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+          cp app/build/outputs/apk/debug/app-debug.apk ../sprayboard.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sprayboard-apk
+          path: sprayboard.apk
+      - name: Publish to the "Android app" release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete android-latest --yes --cleanup-tag || true
+          gh release create android-latest sprayboard.apk \
+            --title "Sprayboard Android app" \
+            --notes "Latest build. On your phone: download sprayboard.apk, open it, and allow installing when Android asks."
